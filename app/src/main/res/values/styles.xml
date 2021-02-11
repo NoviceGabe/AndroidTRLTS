@@ -1,0 +1,16 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@color/dark_gray</item>
+        <item name="android:navigationBarColor">@color/very_light_gray</item>
+    </style>
+
+    <style name="customDialog" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:windowNoTitle">false</item>
+    </style>
+</resources>

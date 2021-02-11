@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/search_bar"
+        android:icon="@drawable/ic_baseline_search_24dp"
+        android:title="@string/search"
+        app:showAsAction="always|collapseActionView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
+    <item android:id="@+id/create_folder"
+        android:icon="@drawable/ic_baseline_create_new_folder_24dp"
+        android:title="@string/create_folder"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/sort"
+        android:title="@string/sort"/>
+
+    <item android:id="@+id/bin"
+        android:title="@string/bin" />
+
+    <item android:id="@+id/settings"
+        android:title="@string/settings" />
+
+    <item android:id="@+id/exit"
+        android:title="@string/exit" />
+</menu>

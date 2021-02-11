@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">AndroidTRLTS</string>
+    <string name="search">search</string>
+    <string name="create_folder">create_folder</string>
+    <string name="sort">sort</string>
+    <string name="name_ascending">name_ascending</string>
+    <string name="name_descending">name_descending</string>
+    <string name="date_ascending">date_ascending</string>
+    <string name="date_descending">date_descending</string>
+    <string name="bin">bin</string>
+    <string name="settings">settings</string>
+    <string name="exit">exit</string>
+    <string name="home_cap">home</string>
+    <string name="settings_cap">settings</string>
+    <string name="help_cap">help</string>
+    <string name="about_cap">about</string>
+    <string name="exit_cap">exit</string>
+    <string name="open">open</string>
+    <string name="close">close</string>
+    <string name="url">URL</string>
+    <string name="image">image</string>
+    <string name="copy">copy</string>
+    <string name="trans_lang">trans_lang</string>
+    <string name="audio">audio</string>
+    <string name="save_as">save as</string>
+    <string name="export">export</string>
+    <string name="share">share</string>
+    <string name="backup">backup</string>
+</resources>

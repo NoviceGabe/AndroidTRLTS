@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/grp_1">
+        <item
+            android:icon="@drawable/ic_baseline_home_24dp"
+            android:title="@string/home_cap"
+            android:id="@+id/home_nav"/>
+        <item
+            android:icon="@drawable/ic_baseline_settings_24dp"
+            android:title="@string/settings_cap"
+            android:id="@+id/settings_nav"/>
+    </group>
+
+    <group android:id="@+id/grp_2">
+        <item
+            android:icon="@drawable/ic_baseline_help_24dp"
+            android:title="@string/help_cap"
+            android:id="@+id/help_nav"/>
+        <item android:title="@string/about_cap"
+            android:icon="@drawable/ic_baseline_info_24dp"
+            android:id="@+id/about_nav"/>
+        <item android:title="@string/exit_cap"
+            android:icon="@drawable/ic_baseline_exit_to_app_24dp"
+            android:id="@+id/exit_nav"/>
+    </group>
+
+</menu>

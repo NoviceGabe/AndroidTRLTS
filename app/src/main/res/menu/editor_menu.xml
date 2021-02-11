@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <item android:id="@+id/image"
+        android:icon="@drawable/ic_baseline_image_24_dp"
+        android:title="@string/image" app:showAsAction="always"/>
+
+    <item android:id="@+id/copy"
+        android:icon="@drawable/ic_baseline_content_copy_24_dp"
+        android:title="@string/copy" app:showAsAction="always"/>
+
+    <item android:id="@+id/trans_lang"
+        android:icon="@drawable/ic_baseline_translate_24_dp"
+        android:title="@string/trans_lang" app:showAsAction="always"/>
+
+    <item android:id="@+id/audio"
+        android:icon="@drawable/ic_baseline_hearing_24_dp"
+        android:title="@string/audio" app:showAsAction="always"/>
+
+    <item android:id="@+id/save"
+        android:icon="@drawable/ic_baseline_save_24_dp"
+        android:title="save" app:showAsAction="always"/>
+
+    <item android:id="@+id/save_as"
+        android:title="@string/save_as" />
+
+    <item android:id="@+id/export"
+        android:title="@string/export" />
+
+    <item android:id="@+id/share"
+        android:title="@string/share" />
+
+    <item android:id="@+id/backup"
+        android:title="@string/backup" />
+
+    <item android:id="@+id/settings"
+        android:title="@string/settings" />
+
+    <item android:id="@+id/close"
+        android:title="@string/close" />
+</menu>
