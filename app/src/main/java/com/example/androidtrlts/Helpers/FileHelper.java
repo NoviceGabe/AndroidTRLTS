@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
@@ -38,12 +39,14 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -775,6 +778,23 @@ public class FileHelper {
         intent.setType("application/pdf");
         intent.putExtra(Intent.EXTRA_STREAM, uri);
         activity.startActivityForResult(Intent.createChooser(intent,"share file with:"),Util.SHARE_REQUEST_CODE);
+    }
+
+    public  static boolean saveImage(Activity activity, String path, Bitmap bitmap){
+
+        try{
+            String name = path.substring(path.lastIndexOf("/")+1, path.lastIndexOf("."));
+            String dir = path.substring(0, path.lastIndexOf("/"));
+            String imageSavePath = dir +"/"+name+".jpg";
+            File picFile = new File(imageSavePath);
+            FileOutputStream fileOutputStream = new FileOutputStream(picFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            fileOutputStream.close();
+            return true;
+        } catch (Exception e){
+            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
+            return false;
+        }
     }
 
     public enum FileType {

@@ -3,6 +3,7 @@ package com.example.androidtrlts.Fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +26,8 @@ import com.example.androidtrlts.Activities.MainActivity;
 import com.example.androidtrlts.Activities.TextEditorActivity;
 import com.example.androidtrlts.Adapters.ItemAdapter;
 import com.example.androidtrlts.Helpers.FileHelper;
+import com.example.androidtrlts.Helpers.ImageHelper;
+import com.example.androidtrlts.Helpers.OCRHelper;
 import com.example.androidtrlts.Model.Item;
 import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.FileList;
@@ -188,6 +191,17 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
             }else{
                 //file is newly saved
                 activity.save(false, file.toString());
+
+                ImageHelper imageHelper = new ImageHelper(getActivity());
+                Bitmap bitmap = imageHelper.getBitmapFromUri(OCRHelper.imageUriResultCrop);
+                if(bitmap != null){
+                    boolean isSave = FileHelper.saveImage(getActivity(), file.toString(), bitmap);
+                    if(isSave){
+                        OCRHelper.imageUriResultCrop = null;
+                        TextEditorActivity.image = bitmap;
+                    }
+                }
+
             }
 
             dialog.dismiss();

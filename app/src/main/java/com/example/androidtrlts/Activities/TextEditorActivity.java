@@ -12,10 +12,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -32,11 +34,14 @@ import android.widget.Toast;
 
 import com.example.androidtrlts.Adapters.CustomDialogBaseAdapter;
 import com.example.androidtrlts.Fragments.DialogFragment;
+import com.example.androidtrlts.Fragments.TTSDialogFragment;
 import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.PermissionHelper;
 import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.DialogItem;
+import com.example.androidtrlts.Utils.DriveServiceHelper;
 import com.example.androidtrlts.Utils.FileList;
+import com.example.androidtrlts.Utils.GDriveRest;
 import com.example.androidtrlts.Utils.IFetchContent;
 import com.example.androidtrlts.Utils.Language;
 import com.example.androidtrlts.Utils.Route;
@@ -69,6 +74,7 @@ import java.util.List;
 import java.util.Set;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.example.androidtrlts.Utils.Util.REQUEST_AUDIO;
 import static com.example.androidtrlts.Utils.Util.WRITE_EXTERNAL_STORAGE;
 
 public class TextEditorActivity extends AppCompatActivity {
@@ -80,12 +86,14 @@ public class TextEditorActivity extends AppCompatActivity {
     private String text = "";
     private String title = "";
     public static String filePath;
+    public static Bitmap image;
     private boolean enableSave = true;
     private boolean isFileSave = false;
     private boolean close = false;
     private boolean init = false;
 
     private PermissionHelper permissionHelper;
+    private GDriveRest gdrive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,9 +183,12 @@ public class TextEditorActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent intent = new Intent();
+
         switch(item.getItemId()){
             case R.id.image: // preview image
-
+                intent = new Intent(TextEditorActivity.this, PreviewImage.class);
+                startActivity(intent);
                 return true;
 
             case R.id.copy: //copy the current text to the clipboard
@@ -283,6 +294,10 @@ public class TextEditorActivity extends AppCompatActivity {
                 });
 
                 return true;
+            case R.id.audio:
+                intent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+                startActivityForResult(intent, REQUEST_AUDIO);
+                return true;
             case R.id.save:
                 if(enableSave){
                     // Firstly checks the filePath value. If the filePath returns null or
@@ -311,6 +326,10 @@ public class TextEditorActivity extends AppCompatActivity {
                 showShareDialog();
                 return true;
 
+            case R.id.backup:
+                showBackupDialog();
+                return true;
+
             case R.id.close:
                 close = true;
                 leave();
@@ -334,10 +353,41 @@ public class TextEditorActivity extends AppCompatActivity {
         View  view = findViewById(R.id.text_edit_layout);
 
         if (resultCode == Activity.RESULT_OK && resultData != null) {
-            if(requestCode == Util.SHARE_REQUEST_CODE){
+            if (requestCode == GDriveRest.REQUEST_CODE_SIGN_IN) {
+                gdrive.handleSignInIntent(resultData, () -> {
+                    File file = new File(filePath);
+                    gdrive.uploadFile(file);
+                });
+            }else if(requestCode == Util.SHARE_REQUEST_CODE){
                 Util.showSnackBar(view, "Shared",getResources().getColor(R.color.success));
             }else{
                 Util.showSnackBar(view, "Unknown error occur!", getResources().getColor(R.color.error));
+            }
+        }
+
+        if(requestCode == REQUEST_AUDIO){
+            if(resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS){
+                //Retrieved the current text
+                //and identify the text language
+                editor.getCurrentHtmlAsync(str -> {
+                    final String text = Util.html2text(str).trim();
+                    IndetifyLanguage(text, (IFetchContent<String>) langCode -> {
+                        Language language = new Language(langCode);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("text",text);
+                        bundle.putString("code",language.getCode());
+                        bundle.putString("lang", language.getDisplayName());
+                        TTSDialogFragment fragment = new TTSDialogFragment();
+                        fragment.setArguments(bundle);
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        fragment.show(fragmentManager, text);
+                    });
+                });
+
+            }else{
+                Intent installIntent = new Intent();
+                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
             }
         }
 
@@ -634,6 +684,52 @@ public class TextEditorActivity extends AppCompatActivity {
         });
 
     }
+
+    private void showBackupDialog(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(TextEditorActivity.this);
+        View row = getLayoutInflater().inflate(R.layout.listview,null);
+        ListView listView = row.findViewById(R.id.listView);
+
+        ArrayList<DialogItem> list = new ArrayList<>();
+        DialogItem item;
+        item = new DialogItem("GoogleDrive","backup_google_drive");
+        list.add(item);
+
+        CustomDialogBaseAdapter adapter = new CustomDialogBaseAdapter(list, TextEditorActivity.this);
+        listView.setAdapter(adapter);
+
+        builder.setCancelable(true);
+        builder.setView(row);
+
+        TextView textView = new TextView(TextEditorActivity.this);
+        textView.setText("Backup");
+        textView.setPadding(20, 30, 20, 30);
+        textView.setTextSize(20f);
+
+        builder.setCustomTitle(textView);
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            if(id == 0){
+                if(enableSave){
+                    onAutoSave(true);
+                }
+                File file = new File(filePath);
+                gdrive = new GDriveRest(TextEditorActivity.this);
+
+                if(gdrive.getAccount() == null){
+                    gdrive.requestUserSignIn();
+                }else {
+                    gdrive.uploadFile(file);
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
 
     private void shareText(String text){
         if(text.isEmpty()){

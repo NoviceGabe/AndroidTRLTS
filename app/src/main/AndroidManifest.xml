@@ -22,7 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
         <activity android:name=".Activities.TextEditorActivity"></activity>
+        <activity android:name=".Activities.PreviewImage"></activity>
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

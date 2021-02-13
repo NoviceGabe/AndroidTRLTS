@@ -1,6 +1,8 @@
 package com.example.androidtrlts.Fragments;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -95,12 +97,16 @@ public class BrowseFragment extends Fragment {
                 FileList.allowDirAccess();
                 backBtn.setVisibility(View.VISIBLE);
             }else{
-                String name = FileList.currentDirPath+"/"+items.get(position).getName();
+                String name = FileList.currentDirPath+items.get(position).getName();
                 File file = new File(name);
                 String text = FileHelper.read(file);
                 String title = FileHelper.getName(file);
 
                 TextEditorActivity.filePath = file.toString();
+                String dir = file.toString().substring(0, file.toString().lastIndexOf("/"));
+                String imagePath = dir +"/"+title+".jpg";
+
+                TextEditorActivity.image = BitmapFactory.decodeFile(imagePath);
 
                 Intent intent = new Intent(getActivity(), TextEditorActivity.class);
                 Bundle bundle = new Bundle();

@@ -1,63 +1,41 @@
 {
   "project_info": {
-    "project_number": "333565474448",
-    "firebase_url": "https://ml-kit-codelab-4d8b2.firebaseio.com",
-    "project_id": "ml-kit-codelab-4d8b2",
-    "storage_bucket": "ml-kit-codelab-4d8b2.appspot.com"
+    "project_number": "879149681446",
+    "project_id": "thesis-project-6e10e",
+    "storage_bucket": "thesis-project-6e10e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:333565474448:android:95fcdf282d1c2cf8600a15",
+        "mobilesdk_app_id": "1:879149681446:android:d4c9373ae7243b78fccfe7",
         "android_client_info": {
           "package_name": "com.example.androidtrlts"
         }
       },
       "oauth_client": [
         {
-          "client_id": "333565474448-mo9rgma5i77mpqkob7llqjul1omddrbp.apps.googleusercontent.com",
+          "client_id": "879149681446-l89up0gevisn5dmsln688a4adtcqfb0m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.androidtrlts",
+            "certificate_hash": "116411cc22b1e00e0b0fabd8315d5b91500ee1ec"
+          }
+        },
+        {
+          "client_id": "879149681446-f6ndifav3bgmkrjdbipgaqg9hjuo18op.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDvU7794JYK5kMeW0hO64SCOVD5uZk9A3M"
+          "current_key": "AIzaSyB-_NIQCIMY5fFNwypaSYWH7Cd7TBgzYWw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "333565474448-mo9rgma5i77mpqkob7llqjul1omddrbp.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:333565474448:android:f39f547434019ea7600a15",
-        "android_client_info": {
-          "package_name": "com.google.firebase.codelab.mlkit"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "333565474448-mo9rgma5i77mpqkob7llqjul1omddrbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDvU7794JYK5kMeW0hO64SCOVD5uZk9A3M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "333565474448-mo9rgma5i77mpqkob7llqjul1omddrbp.apps.googleusercontent.com",
+              "client_id": "879149681446-f6ndifav3bgmkrjdbipgaqg9hjuo18op.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
