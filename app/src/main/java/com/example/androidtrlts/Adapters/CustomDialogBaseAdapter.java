@@ -59,6 +59,9 @@ public class CustomDialogBaseAdapter extends BaseAdapter {
             case "backup_google_drive":
                 imgUri = Uri.parse("android.resource://com.example.androidtrlts/"+R.drawable.ic_google_drive_24dp_black);
                 break;
+            case "backup":
+                imgUri = Uri.parse("android.resource://com.example.androidtrlts/"+R.drawable.ic_baseline_backup_24);
+                break;
             case "pdf":
                 imgUri = Uri.parse("android.resource://com.example.androidtrlts/"+R.drawable.ic_pdf_outline_24dp);
                 break;

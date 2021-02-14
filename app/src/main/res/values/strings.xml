@@ -26,4 +26,91 @@
     <string name="export">export</string>
     <string name="share">share</string>
     <string name="backup">backup</string>
+    <string name="bin_cap">Bin</string>
+    <string name="main_theme">Theme</string>
+    <string name="confirm_on_exit">Confirm on exit app</string>
+    <string name="text_recog_mode">Text recognition mode</string>
+    <string name="editor">Editor</string>
+    <string name="appearance">Appearance</string>
+    <string name="mode">Mode</string>
+    <string name="init_show_keyboard_pref">Show keyboad on editor startup</string>
+    <string name="source_lang_pref">Text source language</string>
+    <string name="source_lang_auto">Auto-detect</string>
+    <string name="source_lang_manual">Manual</string>
+    <string name="auto_save_pref">Auto save</string>
+    <string name="reset_pref">Reset preference</string>
+    <string name="font_family_pref">Font family</string>
+    <string name="background">Background</string>
+    <string name="background_color_pref">color</string>
+    <string name="theme">Theme</string>
+    <string name="font">Font</string>
+    <string name="font_color_pref">color</string>
+
+    <string-array name="source_lang">
+        <item>@string/source_lang_auto</item>
+        <item>@string/source_lang_manual</item>
+    </string-array>
+
+    <string-array name="source_lang_values">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string name="item1">item 1</string>
+    <string name="item2">item 2</string>
+    <string name="item3">item 3</string>
+    <string name="item4">item 3</string>
+
+    <string-array name="font_family">
+        <item>@string/item1</item>
+        <item>@string/item2</item>
+        <item>@string/item3</item>
+        <item>@string/item4</item>
+    </string-array>
+
+    <string-array name="font_family_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+    <string name="theme0">default</string>
+    <string name="theme1">custom</string>
+    <string name="theme2">lighter</string>
+    <string name="theme3">one light</string>
+    <string name="theme4">github</string>
+    <string name="theme5">oceanic</string>
+    <string name="theme6">monokai pro</string>
+    <string name="theme7">ark dark</string>
+    <string name="theme8">dracula</string>
+    <string name="theme9">darker</string>
+    <string name="rename">rename</string>
+    <string name="font_size_pref">Font size</string>
+
+    <string-array name="theme">
+        <item>@string/theme0</item>
+        <item>@string/theme1</item>
+        <item>@string/theme2</item>
+        <item>@string/theme3</item>
+        <item>@string/theme4</item>
+        <item>@string/theme5</item>
+        <item>@string/theme6</item>
+        <item>@string/theme7</item>
+        <item>@string/theme8</item>
+        <item>@string/theme9</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
 </resources>

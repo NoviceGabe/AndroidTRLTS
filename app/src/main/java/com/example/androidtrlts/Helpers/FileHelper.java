@@ -583,7 +583,7 @@ public class FileHelper {
         return list;
     }
 
-    public static List<Item> getItems(String path){
+    public static List<Item> getItems(String path, String filter){
         ArrayList<Item>  items = new ArrayList<>();
         File dir = new File(path); // folder
         File[] files = null;
@@ -603,16 +603,35 @@ public class FileHelper {
             if (file.isDirectory()) {
                 // directory
                 long count = getSize(file);
-                Item item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FOLDER, count);
-                item.setImageResource(getImageResource(file));
-                items.add(item);
+                Item item;
+
+                if(filter != null){
+                    if(file.getName().toLowerCase().contains(filter.toLowerCase())){
+                        item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FOLDER, count);
+                        item.setImageResource(getImageResource(file));
+                        items.add(item);
+                    }
+                }else{
+                    item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FOLDER, count);
+                    item.setImageResource(getImageResource(file));
+                    items.add(item);
+                }
             }else{
                 // file
                 String extension = getExtension(file.getName());
                 if (Arrays.asList(extensions).contains(extension)) {
-                    Item item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FILE, extension);
-                    item.setImageResource(getImageResource(file));
-                    items.add(item);
+                    Item item;
+                    if(filter != null){
+                        if(file.getName().toLowerCase().contains(filter.toLowerCase())){
+                            item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FILE, extension);
+                            item.setImageResource(getImageResource(file));
+                            items.add(item);
+                        }
+                    }else{
+                        item = new Item(file.getName(), file.lastModified(), ItemAdapter.Types.FILE, extension);
+                        item.setImageResource(getImageResource(file));
+                        items.add(item);
+                    }
                 }
             }
         }
@@ -795,6 +814,16 @@ public class FileHelper {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
             return false;
         }
+    }
+
+    public static void deleteRecursive(File item){
+        if(item.isDirectory()){
+            for (File subItem: item.listFiles()){
+                deleteRecursive(subItem);
+            }
+        }
+
+        item.delete();
     }
 
     public enum FileType {

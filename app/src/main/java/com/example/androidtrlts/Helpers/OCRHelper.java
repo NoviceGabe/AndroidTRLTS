@@ -146,6 +146,4 @@ public class OCRHelper {
         return TextRecognition.getClient();
     }
 
-
-
 }

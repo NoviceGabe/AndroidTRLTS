@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -44,22 +46,31 @@ import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.ImageHelper;
 import com.example.androidtrlts.Helpers.InputMethodHelper;
 import com.example.androidtrlts.Helpers.OCRHelper;
+import com.example.androidtrlts.Helpers.PermissionHelper;
 import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.CustomTask;
 import com.example.androidtrlts.Utils.FileList;
+import com.example.androidtrlts.Utils.GoogleLib;
 import com.example.androidtrlts.Utils.IFetchContent;
 import com.example.androidtrlts.Utils.Route;
+import com.example.androidtrlts.Utils.Service;
+import com.example.androidtrlts.Utils.Task;
 import com.example.androidtrlts.Utils.Util;
 import com.example.androidtrlts.Utils.Validator;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.androidtrlts.Utils.Util.READ_EXTERNAL_STORAGE;
 import static com.example.androidtrlts.Utils.Util.REQUEST_IMAGE_CAPTURE;
 import static com.example.androidtrlts.Utils.Util.REQUEST_IMAGE_SELECT;
 
@@ -76,12 +87,22 @@ public class MainActivity extends AppCompatActivity{
 
     private InputMethodHelper inputMethodHelper;
     private SessionHelper sessionHelper;
+    private PermissionHelper permissionHelper;
 
     private static final int FRAGMENT_STATE_REPLACE = 1;
     private static final int FRAGMENT_STATE_ADD = 2;
 
     public static Util.Property property = Util.Property.NAME;
     public static Util.Order order = Util.Order.ASC;
+
+    private GoogleLib google;
+
+    private MenuItem signIn;
+    private MenuItem signOut;
+
+    private boolean pref_auto_save;
+    private boolean pref_save_shared_files;
+    private String pref_font_family;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,16 +189,18 @@ public class MainActivity extends AppCompatActivity{
         });
 
         sessionHelper = new SessionHelper(this);
+        permissionHelper = new PermissionHelper(this);
+        google = new GoogleLib(MainActivity.this);
         init();
-        loadFragment(FRAGMENT_STATE_REPLACE);
-
+        loadFragment(FRAGMENT_STATE_REPLACE, null);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadFragment(FRAGMENT_STATE_REPLACE);
+        loadFragment(FRAGMENT_STATE_REPLACE, null);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -186,6 +209,17 @@ public class MainActivity extends AppCompatActivity{
 
         MenuItem menuItem = menu.findItem(R.id.search_bar);
         SearchView searchView = (SearchView) menuItem.getActionView();
+
+        signIn = menu.findItem(R.id.signin);
+        signOut = menu.findItem(R.id.signout);
+
+        if(google.getUser() == null){
+            signIn.setVisible(true);
+            signOut.setVisible(false);
+        }else{
+            signIn.setVisible(false);
+            signOut.setVisible(true);
+        }
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -197,6 +231,9 @@ public class MainActivity extends AppCompatActivity{
             public boolean onQueryTextChange(String newText) {
                 // when input text change
                // load fragment - filter listview
+                Bundle bundle = new Bundle();
+                bundle.putString("filter", newText);
+                loadFragment(FRAGMENT_STATE_REPLACE, bundle);
                 return false;
             }
         });
@@ -220,6 +257,8 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        final View view = findViewById(R.id.drawer);
+
         int itemId = item.getItemId();
         if (itemId == R.id.search_bar) {
         } else if (itemId == R.id.create_folder) {
@@ -229,6 +268,7 @@ public class MainActivity extends AppCompatActivity{
                 }else if(!Validator.isNameValid(content)){
                     Toast.makeText(MainActivity.this, "Invalid folder name!", Toast.LENGTH_SHORT).show();
                 }else{
+
                     File dir = new File(FileList.currentDirPath+ content); // file directory
                     if(dir.isDirectory() && dir.exists()){
                         Toast.makeText(MainActivity.this, "folder already existed!", Toast.LENGTH_SHORT).show();
@@ -250,7 +290,7 @@ public class MainActivity extends AppCompatActivity{
 
                             @Override
                             public void onDone() {
-                                loadFragment(FRAGMENT_STATE_REPLACE);
+                                loadFragment(FRAGMENT_STATE_REPLACE, null);
                             }
                         });
 
@@ -277,14 +317,14 @@ public class MainActivity extends AppCompatActivity{
 
             asc.setOnClickListener(v -> {
                 order = Util.Order.ASC;
-                loadFragment(FRAGMENT_STATE_REPLACE);
+                loadFragment(FRAGMENT_STATE_REPLACE, null);
                 asc.getBackground().setColorFilter(Color.parseColor("#808080"), PorterDuff.Mode.MULTIPLY);
                 desc.getBackground().setColorFilter(Color.parseColor("#d3d3d3"), PorterDuff.Mode.MULTIPLY);
             });
 
             desc.setOnClickListener(v -> {
                 order = Util.Order.DESC;
-                loadFragment(FRAGMENT_STATE_REPLACE);
+                loadFragment(FRAGMENT_STATE_REPLACE, null);
                 desc.getBackground().setColorFilter(Color.parseColor("#808080"), PorterDuff.Mode.MULTIPLY);
                 asc.getBackground().setColorFilter(Color.parseColor("#d3d3d3"), PorterDuff.Mode.MULTIPLY);
             });
@@ -312,7 +352,16 @@ public class MainActivity extends AppCompatActivity{
 
         } else if (itemId == R.id.bin) {
         } else if (itemId == R.id.settings) {
-        } else if (itemId == R.id.exit) {
+            Intent intent = new Intent(MainActivity.this, MainSettingsActivity.class);
+            startActivity(intent);
+        } else if(itemId == R.id.signin){
+            google.requestUserSignIn();
+        }else if(itemId == R.id.signout){
+            google.signOut();
+            Util.showSnackBar(view, "Signed out", getResources().getColor(R.color.success));
+            signIn.setVisible(true);
+            signOut.setVisible(false);
+        }else if (itemId == R.id.exit) {
             exit();
         }
         return true;
@@ -342,7 +391,28 @@ public class MainActivity extends AppCompatActivity{
                     return;
                 }
 
-                OCRHelper.runOnCloudTextRecognition(this);
+                boolean pref_mode = sessionHelper.getSessionBoolean("pref_text_recog_mode");
+                if(pref_mode){
+                    OCRHelper.runOnCloudTextRecognition(this);
+                }else{
+                    OCRHelper.runTextRecognition(this);
+                }
+
+
+            }else if (requestCode == GoogleLib.REQUEST_CODE_SIGN_IN) {
+                google.handleSignInIntent(data, new Task<String>() {
+                    @Override
+                    public void onSuccess() {
+                        Util.showSnackBar(view, "Sign in successful", getResources().getColor(R.color.success));
+                        signIn.setVisible(false);
+                        signOut.setVisible(true);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Util.showSnackBar(view, error, getResources().getColor(R.color.error));
+                    }
+                });
             }
         }
 
@@ -372,28 +442,54 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void loadFragment(final int FRAGMENT_STATE){
-        FragmentManager fragmentManager;
-        FragmentTransaction fragmentTransaction;
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
+    public void loadFragment(final int FRAGMENT_STATE, Bundle bundle){
+        permissionHelper.checkPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE, new PermissionHelper.PermissionAskListener() {
+            @Override
+            public void onNeedPermission() {
+                ActivityCompat.requestPermissions(MainActivity.this,  new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE);
+            }
 
-        BrowseFragment fragment = new BrowseFragment();
+            @Override
+            public void onPermissionPreviouslyDenied() {
+                permissionHelper.showRational("Permission Denied",
+                        "Without this permission this app is unable to access storage. Are you sure you want to deny this permission?",
+                        () -> ActivityCompat.requestPermissions(MainActivity.this,  new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE));
+            }
 
-        switch(FRAGMENT_STATE){
-            case FRAGMENT_STATE_ADD:
-                fragmentTransaction.add(R.id.fragment_container, fragment);
-                break;
-            case FRAGMENT_STATE_REPLACE:
-                fragmentTransaction.replace(R.id.fragment_container, fragment);
-        }
+            @Override
+            public void onPermissionPreviouslyDeniedWithNeverAskingAgain() {
+                permissionHelper.showDialogForSettings("Permission Denied", "Now you must allow storage access from settings.");
+            }
 
-        fragmentTransaction.commit();
+            @Override
+            public void onPermissionGranted() {
+                FragmentManager fragmentManager;
+                FragmentTransaction fragmentTransaction;
+                fragmentManager = getSupportFragmentManager();
+                fragmentTransaction = fragmentManager.beginTransaction();
+
+                BrowseFragment fragment = new BrowseFragment();
+                if(bundle != null){
+                    fragment.setArguments(bundle);
+                }
+
+                switch(FRAGMENT_STATE){
+                    case FRAGMENT_STATE_ADD:
+                        fragmentTransaction.add(R.id.fragment_container, fragment);
+                        break;
+                    case FRAGMENT_STATE_REPLACE:
+                        fragmentTransaction.replace(R.id.fragment_container, fragment);
+                }
+
+                fragmentTransaction.commit();
+            }
+        });
+
     }
 
     @Override
     public void onBackPressed() {
-        boolean isConfirmOnExit = sessionHelper.getBoolean("confirm_exit", false);
+        boolean isConfirmOnExit = sessionHelper.getSessionBoolean("confirm_exit");
         if(Util.removeTrailingChar(FileList.currentDirPath, "/").equals(Route.getFullPath())){
             if(isConfirmOnExit){
                 finish();
@@ -402,7 +498,7 @@ public class MainActivity extends AppCompatActivity{
             }
         }else{
             FileList.action = Util.Action.CLOSE;
-            loadFragment(FRAGMENT_STATE_REPLACE);
+            loadFragment(FRAGMENT_STATE_REPLACE,null);
         }
     }
 
@@ -418,6 +514,9 @@ public class MainActivity extends AppCompatActivity{
 
         View mView = getLayoutInflater().inflate(layoutId, null);
         final EditText input = (EditText) mView.findViewById(R.id.input);
+        File file =  FileHelper.validateFileName(FileList.currentDirPath+ "New folder");
+        String name = FileHelper.getName(file);
+        input.setText(name);
         input.setOnFocusChangeListener((v, hasFocus) -> input.post(() -> {
             InputMethodManager inputMethodManager = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
@@ -436,15 +535,21 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void exit(){
-        new AlertDialog.Builder(MainActivity.this)
-                .setMessage("Are you sure you want to exit?")
-                .setNegativeButton("NO", null) // dismisses by default
-                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .create()
-                .show();
+        boolean pref_confirm_on_exit_app = sessionHelper.getSessionBoolean("pref_confirm_on_exit");
+
+        if(pref_confirm_on_exit_app){
+            finish();
+        }else{
+            new AlertDialog.Builder(MainActivity.this)
+                    .setMessage("Are you sure you want to exit?")
+                    .setNegativeButton("NO", null) // dismisses by default
+                    .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .create()
+                    .show();
+        }
     }
 }

@@ -55,6 +55,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
 
     private AlertDialog alertDialog;
     private TextEditorActivity activity;
+    private String filter = null;
 
     @NonNull
     @Override
@@ -70,8 +71,8 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
         refreshLayout = mView.findViewById(R.id.refreshLayout);
 
         fileList = new FileList(getActivity(), listView, empty);
-        String path = fileList.getPathOriginRoot().replace(Route.ROOT, "Home");
-        currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+        String path = FileList.pathOriginRoot.replace(Route.ROOT, "Home");
+        currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
         activity = ((TextEditorActivity) getActivity());
         // hide back button if the current directory is root and access outside root is not permissible
         if(!FileList.allowOutsideRootAccess &&
@@ -79,7 +80,23 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
             backBtn.setVisibility(View.GONE);
         }
 
-        items = fileList.load(FileList.currentDirPath);
+        Bundle bundle = getArguments();
+        String title = "New file";
+        filter = null;
+        final String extension = ".txt";
+
+        if(bundle!=null){
+            if(bundle.containsKey("title")){
+                title = bundle.getString("title");
+            }
+
+            if(bundle.containsKey("filter")){
+                filter = bundle.getString("filter");
+            }
+        }
+
+
+        items = FileList.load(FileList.currentDirPath, filter);
         FileList.sort(items, MainActivity.order, MainActivity.property, false);
         fileList.attach(items);
 
@@ -87,14 +104,15 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
             back();
         });
 
+        String finalFilter = filter;
         listView.setOnItemClickListener((parent, view, position, id) -> {
             if(items.get(position).getType().toString().equals(ItemAdapter.Types.FOLDER.toString())){
 
                 FileList.next(items.get(position).getName()); // change directory
-                fileList.reloadListView(FileList.currentDirPath); // reload list view with new  items
+                fileList.reloadListView(FileList.currentDirPath, finalFilter); // reload list view with new  items
 
                 // bread crumbs
-                currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+                currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
 
                 FileList.allowDirAccess();
                 backBtn.setVisibility(View.VISIBLE);
@@ -102,20 +120,11 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
 
         });
 
+        String finalFilter1 = filter;
         refreshLayout.setOnRefreshListener(() -> {
-            fileList.reloadListView(FileList.currentDirPath); // reload list view
+            fileList.reloadListView(FileList.currentDirPath, finalFilter1); // reload list view
             refreshLayout.setRefreshing(false);
         });
-
-        Bundle bundle = getArguments();
-        String title = "New file";
-        final String extension = ".txt";
-
-        if(bundle!=null){
-            if(bundle.containsKey("title")){
-                title = bundle.getString("title");
-            }
-        }
 
         if(TextEditorActivity.filePath != null && !TextEditorActivity.filePath.isEmpty()){
             title = TextEditorActivity.filePath.substring(TextEditorActivity.filePath.lastIndexOf("/")+1,
@@ -230,9 +239,9 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
         String targetParent = Util.getCharsFromPrev( Util.removeTrailingChar(FileList.currentDirPath, "/"),"/");
 
         // bread crumbs
-        currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+        currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
 
-        fileList.reloadListView(FileList.currentDirPath);
+        fileList.reloadListView(FileList.currentDirPath, filter);
 
         if(items == null){
             FileList.StopDirAccess();

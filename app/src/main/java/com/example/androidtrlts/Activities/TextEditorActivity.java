@@ -1,7 +1,6 @@
 package com.example.androidtrlts.Activities;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,10 +15,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,18 +37,18 @@ import com.example.androidtrlts.Fragments.DialogFragment;
 import com.example.androidtrlts.Fragments.TTSDialogFragment;
 import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.PermissionHelper;
+import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.DialogItem;
-import com.example.androidtrlts.Utils.DriveServiceHelper;
 import com.example.androidtrlts.Utils.FileList;
-import com.example.androidtrlts.Utils.GDriveRest;
+import com.example.androidtrlts.Utils.GoogleLib;
 import com.example.androidtrlts.Utils.IFetchContent;
 import com.example.androidtrlts.Utils.Language;
 import com.example.androidtrlts.Utils.Route;
 import com.example.androidtrlts.Utils.Util;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.nl.languageid.LanguageIdentification;
 import com.google.mlkit.nl.languageid.LanguageIdentifier;
@@ -61,9 +61,6 @@ import net.dankito.richtexteditor.android.RichTextEditor;
 import net.dankito.richtexteditor.android.toolbar.AllCommandsEditorToolbar;
 
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -71,7 +68,6 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.example.androidtrlts.Utils.Util.REQUEST_AUDIO;
@@ -82,6 +78,7 @@ public class TextEditorActivity extends AppCompatActivity {
     private RichTextEditor editor;
     private AllCommandsEditorToolbar editorToolbar;
     private MenuItem saveItem;
+    private int menuIconColor;
 
     private String text = "";
     private String title = "";
@@ -93,13 +90,22 @@ public class TextEditorActivity extends AppCompatActivity {
     private boolean init = false;
 
     private PermissionHelper permissionHelper;
-    private GDriveRest gdrive;
+    private FirebaseStorage storage;
+    private StorageReference mStorageRef;
+
+    private GoogleLib google;
+
+    private boolean pref_auto_save;
+    private String pref_font_family;
+
+    private SessionHelper sessionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_editor);
         permissionHelper = new PermissionHelper(this);
+        storage = FirebaseStorage.getInstance();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -140,6 +146,21 @@ public class TextEditorActivity extends AppCompatActivity {
             return;
         }
         initEditor(extractedText);
+
+        google = new GoogleLib(TextEditorActivity.this);
+        sessionHelper = new SessionHelper(TextEditorActivity.this);
+        sessionHelper.initDefaultSharedPreferences();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // if save button is enable, save file on activity change
+        if(enableSave){
+            pref_auto_save = sessionHelper.getSessionBoolean("pref_auto_save");
+            onAutoSave(pref_auto_save);
+        }
     }
 
     @Override
@@ -187,7 +208,7 @@ public class TextEditorActivity extends AppCompatActivity {
 
         switch(item.getItemId()){
             case R.id.image: // preview image
-                intent = new Intent(TextEditorActivity.this, PreviewImage.class);
+                intent = new Intent(TextEditorActivity.this, PreviewImageActivity.class);
                 startActivity(intent);
                 return true;
 
@@ -197,7 +218,7 @@ public class TextEditorActivity extends AppCompatActivity {
                     String text = Util.html2text(str).trim();
                     Util.copyToClipBoard(this,text);
                 });
-
+                return true;
             case R.id.trans_lang:
 
                 List lang = TranslateLanguage.getAllLanguages();
@@ -317,7 +338,6 @@ public class TextEditorActivity extends AppCompatActivity {
                 saveAs();
                 return true;
 
-
             case R.id.export:
                 showExportDialog();
                 return true;
@@ -328,6 +348,11 @@ public class TextEditorActivity extends AppCompatActivity {
 
             case R.id.backup:
                 showBackupDialog();
+                return true;
+
+            case R.id.settings:
+                intent = new Intent(TextEditorActivity.this, EditorSettingsActivity.class);
+                startActivity(intent);
                 return true;
 
             case R.id.close:
@@ -353,12 +378,7 @@ public class TextEditorActivity extends AppCompatActivity {
         View  view = findViewById(R.id.text_edit_layout);
 
         if (resultCode == Activity.RESULT_OK && resultData != null) {
-            if (requestCode == GDriveRest.REQUEST_CODE_SIGN_IN) {
-                gdrive.handleSignInIntent(resultData, () -> {
-                    File file = new File(filePath);
-                    gdrive.uploadFile(file);
-                });
-            }else if(requestCode == Util.SHARE_REQUEST_CODE){
+            if(requestCode == Util.SHARE_REQUEST_CODE){
                 Util.showSnackBar(view, "Shared",getResources().getColor(R.color.success));
             }else{
                 Util.showSnackBar(view, "Unknown error occur!", getResources().getColor(R.color.error));
@@ -395,6 +415,102 @@ public class TextEditorActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, resultData);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initPreferences();
+    }
+
+
+    private void initPreferences(){
+        // shared preferences
+        boolean pref_keyboard = sessionHelper.getSessionBoolean("pref_keyboard");
+        boolean pref_mode = sessionHelper.getSessionBoolean("pref_mode");
+        int pref_color_picker = sessionHelper.getSessionInt("pref_color_picker", Color.BLACK);
+        int pref_color_picker_background = sessionHelper.getSessionInt("pref_color_picker_background", Color.WHITE);
+        String pref_theme = sessionHelper.getSessionString("pref_theme", "-1");
+        pref_auto_save = sessionHelper.getSessionBoolean("pref_auto_save");
+        pref_font_family = sessionHelper.getSessionString("pref_font_family", "serif");
+        editor.setEditorFontSize(sessionHelper.getSessionInt("pref_font_size", 14));
+        editor.setEditorFontFamily(pref_font_family);
+        editor.setPadding((int)(4 * getResources().getDisplayMetrics().density));
+
+        Window window = null;
+        if(Build.VERSION.SDK_INT >= 21){
+            window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        }
+
+        // material theme
+        switch (Integer.valueOf(pref_theme)){
+            case 2:// lighter
+                editorUIColor(Color.parseColor("#fafafa"), Color.parseColor("#546f7a"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#546f7a"));
+                break;
+            case 3:// one light
+                editorUIColor(Color.parseColor("#fafafa"), Color.parseColor("#232323"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#fafafa"));
+                break;
+            case 4:// github
+                editorUIColor(Color.parseColor("#f7f8fa"), Color.parseColor("#5a6169"),
+                        Color.parseColor("#17181a"), Color.parseColor("#17181a"),
+                        Color.parseColor("#5a6169"));
+                break;
+            case 5:// oceanic
+                editorUIColor(Color.parseColor("#273238"), Color.parseColor("#b0bfc6"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#b0bfc6"));
+                break;
+            case 6://monokai pro
+                editorUIColor(Color.parseColor("#2c2a2d"), Color.parseColor("#fcfcfa"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#fcfcfa"));
+                break;
+            case 7:// ark dark
+                editorUIColor(Color.parseColor("#30343f"), Color.parseColor("#d3dae4"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#d3dae4"));
+                break;
+            case 8:// dracula
+                editorUIColor(Color.parseColor("#282a36"), Color.parseColor("#f7f8f2"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#f7f8f2"));
+                break;
+            case 9:// darker
+                editorUIColor(Color.parseColor("#212121"), Color.parseColor("#b0bfc6"),
+                        Color.parseColor("#273238"), Color.parseColor("#273238"),
+                        Color.parseColor("#b0bfc6"));
+                break;
+            default:
+
+                editorUIColor(pref_color_picker_background, pref_color_picker, getResources().getColor(R.color.colorPrimary),
+                        getResources().getColor(R.color.colorPrimary), Color.WHITE);
+                if(window != null) {
+                        window.setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+                        window.setNavigationBarColor(Color.parseColor("#f2f2f2"));
+                }
+
+
+        }
+        invalidateOptionsMenu();
+        // @if edit mode is disable - hide the bottom toolbar and make the text read only
+        // @else edit mode is enable - show the bottom toolbar and make the text read and write
+        if(!pref_mode){
+            editor.setInputEnabled(false);
+            editorToolbar.setVisibility(View.GONE);
+        }else{
+            // show keyboard and focus text on startup
+            if(pref_keyboard){
+                editor.focusEditorAndShowKeyboardDelayed();
+            }
+            editor.setInputEnabled(true);
+            editorToolbar.setVisibility(View.VISIBLE);
+        }
+    }
+
+
     private void initEditor(@NotNull String text){
         ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
         progressDialog.setTitle("Initializing text editor");
@@ -409,8 +525,6 @@ public class TextEditorActivity extends AppCompatActivity {
         this.text = Util.html2text(text).trim(); // get the string
 
         editor.setHtml(text);
-        editor.setPadding((int)(4 * getResources().getDisplayMetrics().density));
-       // editor.setBackgroundColor(Color.parseColor("#d3d3d3"));
 
         // on editor load set the editor default font family
         editor.addEditorLoadedListener(() -> {
@@ -693,7 +807,7 @@ public class TextEditorActivity extends AppCompatActivity {
 
         ArrayList<DialogItem> list = new ArrayList<>();
         DialogItem item;
-        item = new DialogItem("GoogleDrive","backup_google_drive");
+        item = new DialogItem("Cloud storage","backup");
         list.add(item);
 
         CustomDialogBaseAdapter adapter = new CustomDialogBaseAdapter(list, TextEditorActivity.this);
@@ -708,6 +822,7 @@ public class TextEditorActivity extends AppCompatActivity {
         textView.setTextSize(20f);
 
         builder.setCustomTitle(textView);
+        builder.setCustomTitle(textView);
 
         final AlertDialog dialog = builder.create();
         dialog.show();
@@ -717,13 +832,45 @@ public class TextEditorActivity extends AppCompatActivity {
                 if(enableSave){
                     onAutoSave(true);
                 }
-                File file = new File(filePath);
-                gdrive = new GDriveRest(TextEditorActivity.this);
+                FirebaseUser user = google.getUser();
+                final View view1 = findViewById(R.id.text_edit_layout);
 
-                if(gdrive.getAccount() == null){
-                    gdrive.requestUserSignIn();
-                }else {
-                    gdrive.uploadFile(file);
+                if(user == null){
+                    Util.showSnackBar(view1, "You have to sign in", getResources().getColor(R.color.error));
+                    dialog.dismiss();
+                    return;
+                }
+
+                ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
+                progressDialog.setTitle("Backup file");
+                progressDialog.setMessage("Uploading file....");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+
+
+                try {
+                    File file = new File(filePath);
+                    Uri upload = Uri.fromFile(file);
+                    String name = FileHelper.getName(file);
+                    String extension = FileHelper.getExtension(file.toString());
+                    mStorageRef = storage.getReference().child(user.getUid()+"/backup/"+name+"."+extension);
+
+                    mStorageRef.putFile(upload)
+                            .addOnProgressListener(taskSnapshot -> {
+                                double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                            })
+                            .addOnSuccessListener(taskSnapshot -> {
+                                progressDialog.dismiss();
+                                Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
+                            })
+                            .addOnFailureListener(exception -> {
+                                progressDialog.dismiss();
+                                Util.showSnackBar(view1, "Unable to backup file", getResources().getColor(R.color.error));
+                            });
+
+
+                } catch (Exception e) {
+                        e.printStackTrace();
                 }
                 dialog.dismiss();
             }
@@ -811,4 +958,16 @@ public class TextEditorActivity extends AppCompatActivity {
                             Util.showSnackBar(view, "Unable to detect language", getResources().getColor(R.color.error));
                         });
     }
+
+    private void editorUIColor(int bgColor, int fontColor, int toolbarBgColor,
+                               int bottomToolbarBgColor, int iconColor){
+        editor.setEditorBackgroundColor(bgColor);
+        editor.setEditorFontColor(fontColor);
+        toolbar.setBackgroundColor(toolbarBgColor);
+        menuIconColor = iconColor;
+        if(editorToolbar != null){
+            editorToolbar.setBackgroundColor(bottomToolbarBgColor);
+        }
+    }
+
 }

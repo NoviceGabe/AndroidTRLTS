@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:title="@string/editor"
+        app:iconSpaceReserved="false">
+        <com.example.androidtrlts.Preferences.MyPreference
+            android:key="appearance"
+            android:title="@string/appearance"
+            android:summary="Font and theme"
+            app:iconSpaceReserved="false"
+            android:fragment="com.example.androidtrlts.Fragments.EditorSettingsAppearanceFragment"/>
+
+        <com.example.androidtrlts.Preferences.MySwitchPreference
+            android:key="pref_mode"
+            android:title="@string/mode"
+            android:defaultValue="true"
+            android:summary="Read &amp; write"
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MyCheckBoxPreference
+            android:key="pref_keyboard"
+            android:title="@string/init_show_keyboard_pref"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"
+            android:dependency="pref_mode"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Other settings"
+        app:iconSpaceReserved="false">
+
+        <com.example.androidtrlts.Preferences.MyPreference
+            android:key="pref_engine"
+            android:title="TTS engine"
+            android:summary=""
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MyDropdownPreference
+            android:key="pref_source_lang"
+            android:title="@string/source_lang_pref"
+            android:entries="@array/source_lang"
+            android:entryValues="@array/source_lang_values"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="General"
+        app:iconSpaceReserved="false">
+        <com.example.androidtrlts.Preferences.MyCheckBoxPreference
+            android:key="pref_auto_save"
+            android:title="@string/auto_save_pref"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MyPreference
+            android:key="reset_pref"
+            android:title="@string/reset_pref"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

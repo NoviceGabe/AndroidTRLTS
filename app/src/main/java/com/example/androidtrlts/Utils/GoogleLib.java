@@ -14,6 +14,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -24,29 +25,36 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.io.File;
 import java.util.Collections;
 
-public class GDriveRest {
+public class GoogleLib {
     public static final int REQUEST_CODE_SIGN_IN = 100;
 
     private Activity activity;
-    private DriveServiceHelper mDriveServiceHelper;
+    //private DriveServiceHelper mDriveServiceHelper;
     private GoogleSignInAccount account;
     private GoogleSignInClient client;
     private GoogleSignInOptions signInOptions;
+    private FirebaseAuth mAuth;
+    private FirebaseUser user;
 
-    public GDriveRest(Activity activity){
+    public GoogleLib(Activity activity){
         this.activity = activity;
         account = GoogleSignIn.getLastSignedInAccount(activity.getApplicationContext());
         signInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(activity.getString(R.string.default_web_client_id))
                 .requestEmail()
-                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                 .build();
 
         client = GoogleSignIn.getClient(this.activity, signInOptions);
-
+        mAuth = FirebaseAuth.getInstance();
     }
 
     public void requestUserSignIn(){
@@ -54,16 +62,40 @@ public class GDriveRest {
         activity.startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
     }
 
+    public FirebaseUser getUser(){
+        return mAuth.getCurrentUser();
+    }
 
+    public void handleSignInIntent(Intent result, com.example.androidtrlts.Utils.Task service) {
+        Task<GoogleSignInAccount> taskSignIn = GoogleSignIn.getSignedInAccountFromIntent(result);
+        try {
+
+            GoogleSignInAccount account = taskSignIn.getResult(ApiException.class);
+            this.account = account;
+            AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+            mAuth.signInWithCredential(credential)
+                    .addOnCompleteListener(activity, task -> {
+                        if (task.isSuccessful()) {
+                            user = mAuth.getCurrentUser();
+                            service.onSuccess();
+                        } else {
+                            service.onError("Authentication Failed.");
+                        }
+                    });
+
+        } catch (ApiException e) {
+            service.onError(e.getMessage());
+        }
+    }
+
+/*
     public void handleSignInIntent(Intent result, Service service) {
         GoogleSignIn.getSignedInAccountFromIntent(result)
                 .addOnSuccessListener(googleSignInAccount -> {
-                    mDriveServiceHelper = new DriveServiceHelper(getGoogleDriveService());
                     service.callback();
                 })
                 .addOnFailureListener(e -> Toast.makeText(activity, "Unable to sign in.", Toast.LENGTH_SHORT).show());
     }
-
 
     public void uploadFile(File file){
         View view = activity.findViewById(R.id.text_edit_layout);
@@ -107,20 +139,6 @@ public class GDriveRest {
         });
     }
 
-    public void revokeAccess(Service service){
-        client.revokeAccess().addOnCompleteListener(activity, new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Toast.makeText(activity, "Account disconnected", Toast.LENGTH_SHORT).show();
-                service.callback();
-            }
-        });
-    }
-
-    public boolean isSignedIn(){
-        return GoogleSignIn.getLastSignedInAccount(activity) != null;
-    }
-
     public com.google.api.services.drive.Drive getGoogleDriveService(){
         GoogleAccountCredential credential =
                 GoogleAccountCredential.usingOAuth2(
@@ -136,8 +154,32 @@ public class GDriveRest {
 
         return googleDriveService;
     }
+  */
+
+    public void signOut(){
+        mAuth.signOut();
+    }
+
+    public void revokeAccess(Service service){
+        client.revokeAccess().addOnCompleteListener(activity, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(activity, "Account disconnected", Toast.LENGTH_SHORT).show();
+                service.callback();
+            }
+        });
+    }
+
+    public boolean isSignedIn(){
+        return GoogleSignIn.getLastSignedInAccount(activity) != null;
+    }
+
     public GoogleSignInAccount getAccount(){
         return account;
+    }
+
+    public void setAccount(GoogleSignInAccount account){
+        this.account = account;
     }
 
     public GoogleSignInClient getClient(){

@@ -21,6 +21,12 @@
     <item android:id="@+id/settings"
         android:title="@string/settings" />
 
+    <item android:id="@+id/signin"
+        android:title="sign in" />
+
+    <item android:id="@+id/signout"
+        android:title="sign out" />
+
     <item android:id="@+id/exit"
         android:title="@string/exit" />
 </menu>

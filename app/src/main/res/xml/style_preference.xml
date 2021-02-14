@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:title="@string/font"
+        app:iconSpaceReserved="false">
+        <com.example.androidtrlts.Preferences.MyDropdownPreference
+            android:key="pref_font_family"
+            android:title="@string/font_family_pref"
+            android:entries="@array/font_family"
+            android:entryValues="@array/font_family_values"
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MySeekbarPreference
+            android:id="@+id/font_size"
+            android:key="pref_font_size"
+            android:title="@string/font_size_pref"
+            android:max="24"
+            app:min="12"
+            android:defaultValue="14"
+            app:iconSpaceReserved="false"
+            android:summary="14px"/>
+
+        <com.example.androidtrlts.Preferences.MyColorPreference
+            android:key="pref_color_picker"
+            android:title="@string/font_color_pref"
+            android:defaultValue="#000000"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/background"
+        app:iconSpaceReserved="false">
+        <com.example.androidtrlts.Preferences.MyColorPreference
+            android:key="pref_color_picker_background"
+            android:title="@string/background_color_pref"
+            android:defaultValue="#ffffff"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/theme"
+        app:iconSpaceReserved="false">
+        <com.example.androidtrlts.Preferences.MyDropdownPreference
+            android:key="pref_theme"
+            android:entries="@array/theme"
+            android:entryValues="@array/theme_values"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+</PreferenceScreen>

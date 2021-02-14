@@ -24,7 +24,9 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <activity android:name=".Activities.TextEditorActivity"></activity>
-        <activity android:name=".Activities.PreviewImage"></activity>
+        <activity android:name=".Activities.PreviewImageActivity"></activity>
+        <activity android:name=".Activities.MainSettingsActivity"></activity>
+        <activity android:name=".Activities.EditorSettingsActivity"></activity>
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

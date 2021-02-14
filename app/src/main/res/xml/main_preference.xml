@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:title="General"
+        app:iconSpaceReserved="false">
+
+        <com.example.androidtrlts.Preferences.MyCheckBoxPreference
+            android:key="pref_confirm_on_exit"
+            android:title="@string/confirm_on_exit"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MySwitchPreference
+            android:key="pref_main_theme"
+            android:title="@string/main_theme"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <com.example.androidtrlts.Preferences.MySwitchPreference
+            android:key="pref_bin"
+            android:title="@string/bin_cap"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false" />
+
+        <com.example.androidtrlts.Preferences.MySwitchPreference
+            android:key="pref_text_recog_mode"
+            android:title="@string/text_recog_mode"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false" />
+
+        <!--com.example.ocr_dev.MyPreference android:key="pref_rate"
+            android:title="@string/rate_cap"
+            app:iconSpaceReserved="false" />
+
+        <com.example.ocr_dev.MyPreference android:key="privacy_policy"
+            android:title="@string/privacy_policy"
+            app:iconSpaceReserved="false" /-->
+
+        <!--com.example.ocr_dev.MyPreference android:key="pref_help"
+            android:title="@string/help_cap"
+            app:iconSpaceReserved="false" />
+
+        <com.example.ocr_dev.MyPreference
+            android:key="version"
+            android:title="@string/version_pref"
+            app:iconSpaceReserved="false"
+            android:summary="v3.22.22-dev"/-->
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

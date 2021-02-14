@@ -23,11 +23,11 @@ public class PermissionHelper {
     }
 
     public boolean isFirstTimeAsking(String key){
-        return sessionManager.getBoolean(key, true);
+        return sessionManager.getSessionBoolean(key);
     }
 
     public void firstTimeAsking(String key, boolean isFirstTime){
-        sessionManager.putBoolean(key, isFirstTime);
+        sessionManager.setSession(key, isFirstTime);
     }
 
     public boolean shouldAskPermission(){

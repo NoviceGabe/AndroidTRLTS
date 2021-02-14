@@ -4,70 +4,77 @@ package com.example.androidtrlts.Helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.preference.PreferenceManager;
+
 public class SessionHelper {
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
-    private final String PREF = "session";
+    private static final String PREF = "session";
+    private Context context;
 
     public SessionHelper(Context context){
-        sharedPreferences = context.getSharedPreferences(PREF, Context.MODE_PRIVATE);
+        this.context = context;
+        prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
-    public void putString(String key, String value){
-        doEdit();
-        editor.putString(key, value);
-        doCommit();
+    public void initDefaultSharedPreferences(){
+        prefs =  PreferenceManager.getDefaultSharedPreferences(this.context);
+    }
+    public void setSession(String key, String name){
+        editor = prefs.edit();
+        editor.putString(key, name).apply();
     }
 
-    public void putInt(String key, int value){
-        doEdit();
-        editor.putInt(key, value);
-        doCommit();
+    public void setSession(String key, int name){
+        editor = prefs.edit();
+        editor.putInt(key, name).apply();
     }
 
-    public void putFloat(String key, float value){
-        doEdit();
-        editor.putFloat(key, value);
-        doCommit();
+    public void setSession(String key, float name){
+        editor = prefs.edit();
+        editor.putFloat(key, name).apply();
     }
 
-    public void putBoolean(String key, boolean value){
-        doEdit();
-        editor.putBoolean(key, value);
-        doCommit();
+    public void setSession(String key, boolean name){
+        editor = prefs.edit();
+        editor.putBoolean(key, name).apply();
     }
 
-    public String getString(String key, String value){
-        return sharedPreferences.getString(key, value);
+    public void removeSession(String key){
+        editor = prefs.edit();
+        editor.remove(key).apply();
     }
 
-    public int getInt(String key, int value){
-        return sharedPreferences.getInt(key, value);
+    public String getSessionString(String key, String defaultValue){
+        return prefs.getString(key, defaultValue);
     }
 
-    public float getFloat(String key, float value){
-        return sharedPreferences.getFloat(key, value);
+    public int getSessionInt(String key,  int defaultValue){
+        return prefs.getInt(key, defaultValue);
     }
 
-    public boolean getBoolean(String key, boolean value){
-        return sharedPreferences.getBoolean(key, value);
+    public String getSessionString(String key){
+        return prefs.getString(key, "");
+    }
+
+    public int getSessionInt(String key){
+        return prefs.getInt(key, 0);
+    }
+
+    public float getSessionFloat(String key){
+        return prefs.getFloat(key, 0);
+    }
+
+    public boolean getSessionBoolean(String key){
+        return prefs.getBoolean(key, false);
     }
 
     public boolean has(String key){
-        return sharedPreferences.contains(key);
+        return prefs.contains(key);
     }
 
-    private void doEdit(){
-        if(editor == null){
-            editor = sharedPreferences.edit();
-        }
+    public boolean clearAllSession(){
+        editor = prefs.edit();
+        return editor.clear().commit();
     }
-
-    private void doCommit(){
-        if(editor != null){
-            editor.commit();
-            editor = null;
-        }
-    }
-
 }

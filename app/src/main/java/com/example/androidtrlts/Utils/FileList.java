@@ -27,8 +27,8 @@ public class FileList {
     private java.util.List<Item> items;
 
     public static String currentDirPath;
-    private static String pathOriginRoot;
-    private static String currentFolderName;
+    public static String pathOriginRoot;
+    public static String currentFolderName;
 
     private static int storage;
 
@@ -51,15 +51,17 @@ public class FileList {
         init();
     }
 
-    public void reloadListView(String currentDirPath){
-        items.clear(); // remove old data
-        java.util.List<Item> newItems = load(currentDirPath);
+    public void reloadListView(String currentDirPath, String filter){
+        if(items != null){
+            items.clear(); // remove old data
+        }
+        java.util.List<Item> newItems = load(currentDirPath, filter);
         sort(newItems, MainActivity.order, MainActivity.property, false);
         attach(newItems);
     }
 
-    public java.util.List<Item> load(String currentDirPath){
-        return FileHelper.getItems(currentDirPath);
+    public static java.util.List<Item> load(String currentDirPath, String filter){
+        return FileHelper.getItems(currentDirPath, filter);
     }
 
     public void attach(java.util.List<Item> items){
@@ -79,7 +81,7 @@ public class FileList {
     }
 
     private void init(){
-        storage = session.getInt("storage", Util.Storage.INTERNAL.toInt());
+        storage = session.getSessionInt("storage", Util.Storage.INTERNAL.toInt());
 
         if(storage == Util.Storage.EXTERNAL.toInt() && FileHelper.getExternalStorage() != null){
             if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)){
@@ -107,14 +109,6 @@ public class FileList {
             Log.d("storage", exception.getMessage());
         }
 
-    }
-
-    public String getCurrentFolderName(){
-        return currentFolderName;
-    }
-
-    public String getPathOriginRoot(){
-        return pathOriginRoot;
     }
 
     public static void allowDirAccess(){

@@ -1,5 +1,6 @@
 package com.example.androidtrlts.Fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,11 +37,12 @@ public class BrowseFragment extends Fragment {
     private List<Item> items;
     private FileList fileList;
 
-    private ImageView backBtn;
-    private TextView currentPathView;
+    public static  ImageView backBtn;
+    public static TextView currentPathView;
     private ListView listView;
     private TextView empty;
     private SwipeRefreshLayout refreshLayout;
+    private String filter = null;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,9 +63,9 @@ public class BrowseFragment extends Fragment {
 
         // toolbar
         ((MainActivity)getActivity()).getSupportActionBar()
-                .setTitle(fileList.getCurrentFolderName().replace(Route.ROOT, "Home"));
+                .setTitle(FileList.currentFolderName.replace(Route.ROOT, "Home"));
         // bread crumbs
-        currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+        currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
 
         // hide back button if the current directory is root and access outside root is not permissible
         if(!FileList.allowOutsideRootAccess &&
@@ -70,7 +73,14 @@ public class BrowseFragment extends Fragment {
             backBtn.setVisibility(View.GONE);
         }
 
-        items = fileList.load(FileList.currentDirPath);
+        Bundle bundle = getArguments();
+        if(bundle!=null){
+            if(bundle.containsKey("filter")){
+                filter = bundle.getString("filter");
+            }
+        }
+
+        items = FileList.load(FileList.currentDirPath, filter);
         FileList.sort(items, MainActivity.order, MainActivity.property, false);
         fileList.attach(items);
 
@@ -84,42 +94,44 @@ public class BrowseFragment extends Fragment {
         });
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            if(items.get(position).getType().toString().equals(ItemAdapter.Types.FOLDER.toString())){
+            Toast.makeText(getActivity(), FileList.currentDirPath, Toast.LENGTH_SHORT).show();
+            if(items != null && items.size() > 0){
+                if(items.get(position).getType().toString().equals(ItemAdapter.Types.FOLDER.toString())){
 
-                FileList.next(items.get(position).getName()); // change directory
-                fileList.reloadListView(FileList.currentDirPath); // reload list view with new  items
+                    FileList.next(items.get(position).getName()); // change directory
+                    fileList.reloadListView(FileList.currentDirPath, filter); // reload list view with new  items
 
-                // toolbar
-                ((MainActivity)getActivity()).getSupportActionBar().setTitle(fileList.getCurrentFolderName());
-                // bread crumbs
-                currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+                    // toolbar
+                    ((MainActivity)getActivity()).getSupportActionBar().setTitle(FileList.currentFolderName);
+                    // bread crumbs
+                    currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
 
-                FileList.allowDirAccess();
-                backBtn.setVisibility(View.VISIBLE);
-            }else{
-                String name = FileList.currentDirPath+items.get(position).getName();
-                File file = new File(name);
-                String text = FileHelper.read(file);
-                String title = FileHelper.getName(file);
+                    FileList.allowDirAccess();
+                    backBtn.setVisibility(View.VISIBLE);
+                }else{
+                    String name = FileList.currentDirPath+items.get(position).getName();
+                    File file = new File(name);
+                    String text = FileHelper.read(file);
+                    String title = FileHelper.getName(file);
 
-                TextEditorActivity.filePath = file.toString();
-                String dir = file.toString().substring(0, file.toString().lastIndexOf("/"));
-                String imagePath = dir +"/"+title+".jpg";
+                    TextEditorActivity.filePath = file.toString();
+                    String dir = file.toString().substring(0, file.toString().lastIndexOf("/"));
+                    String imagePath = dir +"/"+title+".jpg";
 
-                TextEditorActivity.image = BitmapFactory.decodeFile(imagePath);
+                    TextEditorActivity.image = BitmapFactory.decodeFile(imagePath);
 
-                Intent intent = new Intent(getActivity(), TextEditorActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("extractedText", text);
-                bundle.putString("title", title);
-                intent.putExtras(bundle);
-                getActivity().startActivity(intent);
+                    Intent intent = new Intent(getActivity(), TextEditorActivity.class);
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putString("extractedText", text);
+                    bundle1.putString("title", title);
+                    intent.putExtras(bundle1);
+                    getActivity().startActivity(intent);
+                }
             }
-
         });
 
         refreshLayout.setOnRefreshListener(() -> {
-            fileList.reloadListView(FileList.currentDirPath); // reload list view
+            fileList.reloadListView(FileList.currentDirPath, filter); // reload list view
             refreshLayout.setRefreshing(false);
         });
 
@@ -141,11 +153,11 @@ public class BrowseFragment extends Fragment {
         String targetParent = Util.getCharsFromPrev( Util.removeTrailingChar(FileList.currentDirPath, "/"),"/");
 
         ((MainActivity)getActivity()).getSupportActionBar()
-                .setTitle(fileList.getCurrentFolderName().replace(Route.ROOT, "Home"));
+                .setTitle(FileList.currentFolderName.replace(Route.ROOT, "Home"));
         // bread crumbs
-        currentPathView.setText(fileList.getPathOriginRoot().replace(Route.ROOT, "Home"));
+        currentPathView.setText(FileList.pathOriginRoot.replace(Route.ROOT, "Home"));
 
-        fileList.reloadListView(FileList.currentDirPath);
+        fileList.reloadListView(FileList.currentDirPath, filter);
 
         if(items == null){
             FileList.StopDirAccess();

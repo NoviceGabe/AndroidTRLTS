@@ -15,7 +15,7 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.example.androidtrlts.Helpers.OCRHelper;
 import com.example.androidtrlts.R;
 
-public class PreviewImage extends AppCompatActivity {
+public class PreviewImageActivity extends AppCompatActivity {
     private Toolbar toolbar;
 
     @Override
