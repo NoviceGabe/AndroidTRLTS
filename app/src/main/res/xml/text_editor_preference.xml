@@ -57,10 +57,18 @@
             android:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
+        <com.example.androidtrlts.Preferences.MyCheckBoxPreference
+            android:key="pref_sync_save"
+            android:title="Sync files on save"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"
+            android:dependency="pref_mode"/>
+
         <com.example.androidtrlts.Preferences.MyPreference
             android:key="reset_pref"
             android:title="@string/reset_pref"
             app:iconSpaceReserved="false"/>
+
 
     </PreferenceCategory>
 

@@ -18,8 +18,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,17 +38,23 @@ import com.example.androidtrlts.Adapters.CustomDialogBaseAdapter;
 import com.example.androidtrlts.Fragments.DialogFragment;
 import com.example.androidtrlts.Fragments.TTSDialogFragment;
 import com.example.androidtrlts.Helpers.FileHelper;
+import com.example.androidtrlts.Helpers.ImageHelper;
+import com.example.androidtrlts.Helpers.OCRHelper;
 import com.example.androidtrlts.Helpers.PermissionHelper;
 import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
+import com.example.androidtrlts.Utils.DB;
 import com.example.androidtrlts.Utils.DialogItem;
 import com.example.androidtrlts.Utils.FileList;
 import com.example.androidtrlts.Utils.GoogleLib;
 import com.example.androidtrlts.Utils.IFetchContent;
 import com.example.androidtrlts.Utils.Language;
 import com.example.androidtrlts.Utils.Route;
+import com.example.androidtrlts.Utils.Task;
 import com.example.androidtrlts.Utils.Util;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.mlkit.common.model.DownloadConditions;
@@ -65,9 +73,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.example.androidtrlts.Utils.Util.REQUEST_AUDIO;
@@ -78,6 +91,7 @@ public class TextEditorActivity extends AppCompatActivity {
     private RichTextEditor editor;
     private AllCommandsEditorToolbar editorToolbar;
     private MenuItem saveItem;
+    private MenuItem backupItem;
     private int menuIconColor;
 
     private String text = "";
@@ -90,8 +104,6 @@ public class TextEditorActivity extends AppCompatActivity {
     private boolean init = false;
 
     private PermissionHelper permissionHelper;
-    private FirebaseStorage storage;
-    private StorageReference mStorageRef;
 
     private GoogleLib google;
 
@@ -100,12 +112,18 @@ public class TextEditorActivity extends AppCompatActivity {
 
     private SessionHelper sessionHelper;
 
+    private DB db;
+    private FirebaseUser user;
+
+    private  com.example.androidtrlts.Model.File backupFile;
+    private boolean isSync = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_editor);
         permissionHelper = new PermissionHelper(this);
-        storage = FirebaseStorage.getInstance();
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -148,9 +166,11 @@ public class TextEditorActivity extends AppCompatActivity {
         initEditor(extractedText);
 
         google = new GoogleLib(TextEditorActivity.this);
+        db = new DB(TextEditorActivity.this);
         sessionHelper = new SessionHelper(TextEditorActivity.this);
         sessionHelper.initDefaultSharedPreferences();
 
+        user = google.getUser();
     }
 
     @Override
@@ -169,6 +189,7 @@ public class TextEditorActivity extends AppCompatActivity {
         inflater.inflate(R.menu.editor_menu, menu);
 
         saveItem = menu.getItem(4); // save icon
+        backupItem = menu.getItem(8); // backup icon
         String path = filePath;
         boolean save = enableSave;
         // disabled save button
@@ -178,6 +199,36 @@ public class TextEditorActivity extends AppCompatActivity {
                 drawable.mutate();
                 drawable.setColorFilter(Color.parseColor("#808080"), PorterDuff.Mode.SRC_ATOP);
             }
+        }
+
+        // if user logged in
+        if(user != null && filePath != null){
+            String dir = filePath.substring(0, filePath.lastIndexOf("/"));
+            String name = filePath.substring(filePath.lastIndexOf("/")+1, filePath.lastIndexOf("."));
+            com.example.androidtrlts.Model.File file = new com.example.androidtrlts.Model.File();
+            file.setDir(dir);
+            file.setFilename(name);
+            db.getFile(user.getUid(), file, new Task<List<com.example.androidtrlts.Model.File>, String>() {
+                @Override
+                public void onSuccess(List<com.example.androidtrlts.Model.File> files) {
+                    if(files.size() > 0){
+                        backupFile = files.get(0);
+                        boolean sync = sessionHelper.getSessionBoolean("pref_sync_save");
+                        if(sync){
+                            backupItem.setTitle("synced");
+                        }else{
+                            backupItem.setTitle("sync");
+                        }
+
+                        isSync = sync;
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.d("status",error);
+                }
+            });
         }
 
         return true;
@@ -347,7 +398,11 @@ public class TextEditorActivity extends AppCompatActivity {
                 return true;
 
             case R.id.backup:
-                showBackupDialog();
+                if(!isSync && backupFile != null){
+                    sync();
+                }else{
+                    showBackupDialog();
+                }
                 return true;
 
             case R.id.settings:
@@ -419,6 +474,14 @@ public class TextEditorActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         initPreferences();
+        if(backupFile != null){
+            if(isSync){
+                backupItem.setTitle("synced");
+            }else{
+                backupItem.setTitle("sync");
+            }
+        }
+
     }
 
 
@@ -571,6 +634,14 @@ public class TextEditorActivity extends AppCompatActivity {
             public void onPermissionGranted() {
                 editor.getCurrentHtmlAsync(str -> {
                     saveToTextFile(str, filePath);
+                    boolean sync = sessionHelper.getSessionBoolean("pref_sync_save");
+                    if(sync) {
+                        backupItem.setTitle("synced");
+                        final Handler handler = new Handler();
+                        handler.postDelayed(() -> sync(), 1000);
+
+                    }
+
                 });
             }
         });
@@ -832,41 +903,81 @@ public class TextEditorActivity extends AppCompatActivity {
                 if(enableSave){
                     onAutoSave(true);
                 }
-                FirebaseUser user = google.getUser();
+
                 final View view1 = findViewById(R.id.text_edit_layout);
 
-                if(user == null){
-                    Util.showSnackBar(view1, "You have to sign in", getResources().getColor(R.color.error));
-                    dialog.dismiss();
-                    return;
-                }
-
-                ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
-                progressDialog.setTitle("Backup file");
-                progressDialog.setMessage("Uploading file....");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
-
-
                 try {
-                    File file = new File(filePath);
-                    Uri upload = Uri.fromFile(file);
-                    String name = FileHelper.getName(file);
-                    String extension = FileHelper.getExtension(file.toString());
-                    mStorageRef = storage.getReference().child(user.getUid()+"/backup/"+name+"."+extension);
 
-                    mStorageRef.putFile(upload)
-                            .addOnProgressListener(taskSnapshot -> {
-                                double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                            })
-                            .addOnSuccessListener(taskSnapshot -> {
-                                progressDialog.dismiss();
-                                Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
-                            })
-                            .addOnFailureListener(exception -> {
-                                progressDialog.dismiss();
-                                Util.showSnackBar(view1, "Unable to backup file", getResources().getColor(R.color.error));
-                            });
+                    if(user == null){
+                        Util.showSnackBar(view1, "You have to sign in", getResources().getColor(R.color.error));
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    DocumentReference ref = db.createDocumentRef("files");
+
+                    ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
+                    progressDialog.setTitle("Backup file");
+                    progressDialog.setMessage("Uploading file....");
+                    progressDialog.setCancelable(false);
+
+                    db.uploadFileToStorage(user.getUid(), ref.getId(), filePath, new Task() {
+                        @Override
+                        public void onSuccess(Object arg) {
+                            String dir = filePath.substring(0, filePath.lastIndexOf("/"));
+                            String imagePath = dir +"/"+title+".jpg";
+                            File file = new File(imagePath);
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("uid", user.getUid());
+                            data.put("name", user.getDisplayName());
+                            data.put("dir", dir);
+                            data.put("filename", title);
+                            data.put("id", ref.getId());
+
+                            if(file.exists()){
+                                db.uploadFileToStorage(user.getUid(), ref.getId(), file.toString(), new Task() {
+                                    @Override
+                                    public void onSuccess(Object arg) {
+                                        db.addFile(data, new Task() {
+                                            @Override
+                                            public void onSuccess(Object arg) {
+                                                Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
+                                            }
+
+                                            @Override
+                                            public void onError(Object arg) {
+                                                Util.showSnackBar(view1, "An error has occured", getResources().getColor(R.color.error));
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(Object arg) {
+                                        Util.showSnackBar(view1, "Document has no image", getResources().getColor(R.color.error));
+                                    }
+                                }, null);
+
+                                return;
+                            }
+
+                               db.addFile(data, new Task() {
+                                            @Override
+                                            public void onSuccess(Object arg) {
+                                                Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
+                                            }
+
+                                            @Override
+                                            public void onError(Object arg) {
+                                                Util.showSnackBar(view1, "An error has occured", getResources().getColor(R.color.error));
+                                            }
+                                        });
+                        }
+
+                        @Override
+                        public void onError(Object arg) {
+                            Util.showSnackBar(view1, "Unable to backup file", getResources().getColor(R.color.error));
+                        }
+                    }, progressDialog);
 
 
                 } catch (Exception e) {
@@ -877,6 +988,38 @@ public class TextEditorActivity extends AppCompatActivity {
         });
     }
 
+    private void sync(){
+        final View view = findViewById(R.id.text_edit_layout);
+        ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
+        progressDialog.setTitle("Sync file");
+        progressDialog.setMessage("Syncing....");
+        progressDialog.setCancelable(false);
+
+        db.uploadFileToStorage(user.getUid(), backupFile.getId(), filePath, new Task() {
+            @Override
+            public void onSuccess(Object arg) {
+                Date currentTime = Calendar.getInstance().getTime();
+                backupFile.setLastUpdated(currentTime);
+                db.updateFile(backupFile, new Task<Void, String>() {
+                    @Override
+                    public void onSuccess(Void arg) {
+                        Util.showSnackBar(view, "File synced successfully.", getResources().getColor(R.color.success));
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Util.showSnackBar(view, error, getResources().getColor(R.color.error));
+                    }
+                });
+
+            }
+
+            @Override
+            public void onError(Object arg) {
+                Util.showSnackBar(view, "Unable to sync file", getResources().getColor(R.color.error));
+            }
+        }, progressDialog);
+    }
 
     private void shareText(String text){
         if(text.isEmpty()){

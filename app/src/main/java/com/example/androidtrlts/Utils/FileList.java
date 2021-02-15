@@ -148,6 +148,13 @@ public class FileList {
 
     }
 
+    public static void home(){
+        currentDirPath = Route.getFullPath()+"/";
+        pathOriginRoot = Route.ROOT+"/";
+        currentFolderName = Route.ROOT;
+
+    }
+
     public static void sort(java.util.List<Item> item, Util.Order order, Util.Property property, boolean ignoreType){
         if(item != null){
             Collections.sort(item, (o1, o2) -> {

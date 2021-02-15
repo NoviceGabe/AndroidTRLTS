@@ -27,6 +27,7 @@
         <activity android:name=".Activities.PreviewImageActivity"></activity>
         <activity android:name=".Activities.MainSettingsActivity"></activity>
         <activity android:name=".Activities.EditorSettingsActivity"></activity>
+        <activity android:name=".Activities.MainActivity"></activity>
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
@@ -43,7 +44,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".Activities.MainActivity">
+        <activity android:name=".Activities.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

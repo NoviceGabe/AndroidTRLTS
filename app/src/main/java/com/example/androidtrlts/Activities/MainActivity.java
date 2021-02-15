@@ -41,7 +41,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.androidtrlts.Adapters.SortAdapter;
+import com.example.androidtrlts.Fragments.AboutFragment;
 import com.example.androidtrlts.Fragments.BrowseFragment;
+import com.example.androidtrlts.Fragments.HelpFragment;
 import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.ImageHelper;
 import com.example.androidtrlts.Helpers.InputMethodHelper;
@@ -186,6 +188,36 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
 
+        });
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()){
+                case R.id.home_nav :
+                    FileList.home();
+                    loadFragment(FRAGMENT_STATE_REPLACE, null);
+                    drawerLayout.closeDrawers();
+                    invalidateOptionsMenu();
+                    return true;
+                case R.id.settings_nav:
+                    Intent intent = new Intent(MainActivity.this, MainSettingsActivity.class);
+                    startActivity(intent);
+                    drawerLayout.closeDrawers();
+                    return true;
+                case R.id.help_nav :
+                    drawerLayout.closeDrawers();
+                    loadHelpFragment(FRAGMENT_STATE_REPLACE);
+                    return true;
+                case R.id.about_nav :
+                    drawerLayout.closeDrawers();
+                    loadAboutFragment(FRAGMENT_STATE_REPLACE);
+                    return true;
+                case R.id.exit_nav :
+                    drawerLayout.closeDrawers();
+                    exit();
+                    return true;
+            }
+
+            return true;
         });
 
         sessionHelper = new SessionHelper(this);
@@ -400,9 +432,9 @@ public class MainActivity extends AppCompatActivity{
 
 
             }else if (requestCode == GoogleLib.REQUEST_CODE_SIGN_IN) {
-                google.handleSignInIntent(data, new Task<String>() {
+                google.handleSignInIntent(data, new Task<Void, String>() {
                     @Override
-                    public void onSuccess() {
+                    public void onSuccess(Void avoid) {
                         Util.showSnackBar(view, "Sign in successful", getResources().getColor(R.color.success));
                         signIn.setVisible(false);
                         signOut.setVisible(true);
@@ -486,6 +518,49 @@ public class MainActivity extends AppCompatActivity{
         });
 
     }
+
+
+    private void loadAboutFragment(final int FRAGMENT_STATE){
+        FragmentManager fragmentManager;
+        FragmentTransaction fragmentTransaction;
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+
+        AboutFragment aboutFragment = new AboutFragment();
+        switch(FRAGMENT_STATE){
+            case FRAGMENT_STATE_ADD:
+                fragmentTransaction.add(R.id.fragment_container, aboutFragment);
+                break;
+            case FRAGMENT_STATE_REPLACE:
+                fragmentTransaction.replace(R.id.fragment_container, aboutFragment);
+        }
+
+        fragmentTransaction.commit();
+        getSupportActionBar().setTitle("About");
+
+    }
+
+    public void loadHelpFragment(final int FRAGMENT_STATE){
+        FragmentManager fragmentManager;
+        FragmentTransaction fragmentTransaction;
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+
+        HelpFragment helpFragment = new HelpFragment();
+        switch(FRAGMENT_STATE){
+            case FRAGMENT_STATE_ADD:
+                fragmentTransaction.add(R.id.fragment_container, helpFragment);
+                break;
+            case FRAGMENT_STATE_REPLACE:
+                fragmentTransaction.replace(R.id.fragment_container, helpFragment);
+        }
+
+        fragmentTransaction.commit();
+
+        getSupportActionBar().setTitle("Help");
+
+    }
+
 
     @Override
     public void onBackPressed() {

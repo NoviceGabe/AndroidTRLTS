@@ -32,23 +32,20 @@
             android:defaultValue="false"
             app:iconSpaceReserved="false" />
 
-        <!--com.example.ocr_dev.MyPreference android:key="pref_rate"
-            android:title="@string/rate_cap"
+        <com.example.androidtrlts.Preferences.MyCheckBoxPreference
+            android:key="pref_sync"
+            android:title="Auto-sync files"
+            android:defaultValue="false"
             app:iconSpaceReserved="false" />
 
-        <com.example.ocr_dev.MyPreference android:key="privacy_policy"
+        <com.example.androidtrlts.Preferences.MyPreference
+            android:key="pref_account"
+            android:title="Account"
+            app:iconSpaceReserved="false" />
+
+        <!--com.example.ocr_dev.MyPreference android:key="privacy_policy"
             android:title="@string/privacy_policy"
             app:iconSpaceReserved="false" /-->
-
-        <!--com.example.ocr_dev.MyPreference android:key="pref_help"
-            android:title="@string/help_cap"
-            app:iconSpaceReserved="false" />
-
-        <com.example.ocr_dev.MyPreference
-            android:key="version"
-            android:title="@string/version_pref"
-            app:iconSpaceReserved="false"
-            android:summary="v3.22.22-dev"/-->
 
     </PreferenceCategory>
 

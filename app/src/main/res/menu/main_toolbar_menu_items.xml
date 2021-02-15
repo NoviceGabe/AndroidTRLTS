@@ -15,6 +15,9 @@
     <item android:id="@+id/sort"
         android:title="@string/sort"/>
 
+    <item android:id="@+id/backup"
+        android:title="@string/backup"/>
+
     <item android:id="@+id/bin"
         android:title="@string/bin" />
 

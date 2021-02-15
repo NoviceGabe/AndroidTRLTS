@@ -30,9 +30,14 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GoogleLib {
     public static final int REQUEST_CODE_SIGN_IN = 100;
@@ -44,6 +49,7 @@ public class GoogleLib {
     private GoogleSignInOptions signInOptions;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
+    private DB db;
 
     public GoogleLib(Activity activity){
         this.activity = activity;
@@ -55,6 +61,8 @@ public class GoogleLib {
 
         client = GoogleSignIn.getClient(this.activity, signInOptions);
         mAuth = FirebaseAuth.getInstance();
+
+        db = new DB(activity);
     }
 
     public void requestUserSignIn(){
@@ -77,7 +85,16 @@ public class GoogleLib {
                     .addOnCompleteListener(activity, task -> {
                         if (task.isSuccessful()) {
                             user = mAuth.getCurrentUser();
-                            service.onSuccess();
+                            boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                            if(isNew){
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("uid", user.getUid());
+                                data.put("name", user.getDisplayName());
+                                data.put("email", user.getEmail());
+                                db.addUserData(data, service);
+                                return;
+                            }
+                            service.onSuccess(null);
                         } else {
                             service.onError("Authentication Failed.");
                         }
@@ -87,6 +104,8 @@ public class GoogleLib {
             service.onError(e.getMessage());
         }
     }
+
+
 
 /*
     public void handleSignInIntent(Intent result, Service service) {

@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">AndroidTRLTS</string>
+    <string name="app_description">AndroidTRLTS allows you to manage your OCR documents conveniently.
+        This app easily converts any image containing text to editable digital format. Editing and sharing
+        of files and documents will going to be seamless. AndroidTRLTS includes basic features
+        and also comes with premium features available from paid OCR Scanner apps but at almost no cost.
+    </string>
     <string name="search">search</string>
     <string name="create_folder">create_folder</string>
     <string name="sort">sort</string>
@@ -10,11 +15,11 @@
     <string name="bin">bin</string>
     <string name="settings">settings</string>
     <string name="exit">exit</string>
-    <string name="home_cap">home</string>
-    <string name="settings_cap">settings</string>
-    <string name="help_cap">help</string>
-    <string name="about_cap">about</string>
-    <string name="exit_cap">exit</string>
+    <string name="home_cap">Home</string>
+    <string name="settings_cap">Settings</string>
+    <string name="help_cap">Help</string>
+    <string name="about_cap">About</string>
+    <string name="exit_cap">Exit</string>
     <string name="open">open</string>
     <string name="close">close</string>
     <string name="url">URL</string>
@@ -34,8 +39,8 @@
     <string name="appearance">Appearance</string>
     <string name="mode">Mode</string>
     <string name="init_show_keyboard_pref">Show keyboad on editor startup</string>
-    <string name="source_lang_pref">Text source language</string>
-    <string name="source_lang_auto">Auto-detect</string>
+    <string name="source_lang_pref">Text Detection</string>
+    <string name="source_lang_auto">Auto</string>
     <string name="source_lang_manual">Manual</string>
     <string name="auto_save_pref">Auto save</string>
     <string name="reset_pref">Reset preference</string>
