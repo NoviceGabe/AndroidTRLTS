@@ -27,15 +27,33 @@ import com.google.mlkit.vision.text.TextRecognizer;
 public class OCRHelper {
 
     public static Uri imageUriResultCrop;
+    public  static int tries = 0;
 
     private static void processTextRecognitionResult(Activity activity, Text texts){
         String resultText = texts.getText();
+        tries++;
 
         if(resultText.isEmpty()){
-            Toast.makeText(activity, "No text found or cannot read image", Toast.LENGTH_SHORT).show();
+            if(tries >= 3 && tries < 6){
+                Toast.makeText(activity,
+                        "Try to switch to on-cloud text recognition to recognize the text with high accuracy. " +
+                                "Go to the main settings.",
+                        Toast.LENGTH_SHORT).show();
+            }else if(tries >= 6 && tries < 10){
+                Toast.makeText(activity,
+                        "For better result make sure that the image is in good quality.",
+                        Toast.LENGTH_SHORT).show();
+            }else if(tries == 10){
+                Toast.makeText(activity,
+                        "\"Insanity is doing the same thing over and over again and expecting different results.\" - Albert Einstein",
+                        Toast.LENGTH_SHORT).show();
+                tries = 0;
+            }else{
+                Toast.makeText(activity, "No text found or cannot read image", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
-
+        tries = 0;
         int counter = 0;
         String title = "";
         for(Text.TextBlock block:texts.getTextBlocks()){
@@ -78,9 +96,13 @@ public class OCRHelper {
         TextRecognizer recognizer = getTextRecognizer();
         recognizer.process(image)
                 .addOnSuccessListener(
-                        texts -> processTextRecognitionResult(activity,texts))
+                        texts -> {
+                            processTextRecognitionResult(activity,texts);
+                        })
                 .addOnFailureListener(
-                        e -> e.printStackTrace());
+                        e -> {
+                            e.printStackTrace();
+                        });
     }
 
     public static  void runOnCloudTextRecognition(Activity activity){

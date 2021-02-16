@@ -9,4 +9,14 @@
         <item name="android:textColorSecondary">@color/teal_200</item>
         <item name="android:navigationBarColor">@color/black</item>
     </style>
+
+    <style name="customDialog" parent="@style/Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:background">@color/backgroundColor</item>
+    </style>
+
+    <style name="WindowAnimationTransition">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
 </resources>

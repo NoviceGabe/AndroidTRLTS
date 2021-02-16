@@ -39,12 +39,6 @@ public class PreviewImageActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        CoordinatorLayout layout = findViewById(R.id.preview_image);
-        super.onResume();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == android.R.id.home){
             finish();

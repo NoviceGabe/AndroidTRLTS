@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -139,6 +141,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
         tvTitle.setTextSize(20f);
         tvTitle.setText("Save as");
         tvTitle.setTypeface(tvTitle.getTypeface(), Typeface.BOLD);
+        tvTitle.setTextColor(getContext().getResources().getColor(R.color.textColor));
         builder.setCustomTitle(tvTitle);
 
         final EditText input = (EditText) mView.findViewById(R.id.input);
@@ -151,6 +154,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
         String filename = file.toString();
         filename = filename.substring(filename.lastIndexOf("/")+1);
         input.setText(filename);
+        input.setTextColor(getContext().getResources().getColor(R.color.textColor));
 
         input.requestFocus();
 
@@ -219,6 +223,8 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
 
         alertDialog = builder.create();
         alertDialog.setCanceledOnTouchOutside(true);
+        Window window = alertDialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
 
         return alertDialog;
     }

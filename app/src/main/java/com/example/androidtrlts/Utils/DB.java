@@ -146,7 +146,16 @@ public class DB {
                        if(dialog != null){
                            dialog.dismiss();
                        }
-                        task.onSuccess(null);
+
+                        mStorageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            task.onSuccess(uri);
+                        }).addOnFailureListener(exception -> {
+                            if(dialog != null){
+                                dialog.dismiss();
+                            }
+                            task.onError(exception.getMessage());
+                        });
+
                     })
                     .addOnFailureListener(exception -> {
                         if(dialog != null){

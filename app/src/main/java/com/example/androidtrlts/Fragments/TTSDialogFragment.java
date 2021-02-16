@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -74,6 +75,8 @@ public class TTSDialogFragment extends BottomSheetDialogFragment implements Seri
                     confirmDialog();
                 }
 
+                SessionHelper sessionHelper = new SessionHelper(getActivity());
+                sessionHelper.setSession("pref_engine", tts.getDefaultEngine());
 
             }else{
                 Toast.makeText(getActivity(), "Error: Initialization failed", Toast.LENGTH_SHORT).show();

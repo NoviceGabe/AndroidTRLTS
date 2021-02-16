@@ -98,6 +98,7 @@ public class HelpFragment extends Fragment {
             }
 
             TextView description = view.findViewById(R.id.help_description);
+            description.setTextColor(getContext().getResources().getColor(R.color.textColor));
             String item = (String) getItem(position);
 
             description.setText(Html.fromHtml(item, source -> {

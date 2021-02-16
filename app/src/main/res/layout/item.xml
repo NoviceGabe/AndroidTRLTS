@@ -11,7 +11,8 @@
         android:id="@+id/iv_file_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/ic_file_outline_24dp"/>
+        android:src="@drawable/ic_file_outline_24dp"
+        android:tint="@color/textColor"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,7 +26,8 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            tools:text="DCIM" />
+            tools:text="DCIM"
+            android:textColor="@color/textColor"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/textColorSecondary"
                 tools:text="16:07 Nov 18th, 2014" />
 
             <TextView
@@ -48,7 +50,7 @@
                 android:layout_marginRight="20dp"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/textColorSecondary"
                 tools:text="3 items" />
         </LinearLayout>
     </LinearLayout>

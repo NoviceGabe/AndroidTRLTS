@@ -94,7 +94,6 @@ public class BrowseFragment extends Fragment {
         });
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            Toast.makeText(getActivity(), FileList.currentDirPath, Toast.LENGTH_SHORT).show();
             if(items != null && items.size() > 0){
                 if(items.get(position).getType().toString().equals(ItemAdapter.Types.FOLDER.toString())){
 

@@ -1,17 +1,23 @@
 package com.example.androidtrlts.Fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import androidx.preference.SwitchPreference;
 
+import com.example.androidtrlts.Activities.MainActivity;
 import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
@@ -29,19 +35,14 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
         SwitchPreference bin = findPreference("pref_bin");
         SwitchPreference mode = findPreference("pref_text_recog_mode");
         CheckBoxPreference exit = findPreference("pref_confirm_on_exit");
+        SessionHelper sessionHelper = new SessionHelper(getActivity());
 
-        if(theme.isChecked()){
-            theme.setSummary("Dark mode");
-        }else{
-            theme.setSummary("Light mode");
-        }
-
-        if(bin.isChecked()){
+/*        if(bin.isChecked()){
             bin.setSummary("Enabled");
         }else{
             bin.setSummary("Disabled");
         }
-
+*/
         if(mode.isChecked()){
             mode.setSummary("On-cloud - Recognizes and identifies a broad range of languages and special characters");
         }else{
@@ -52,15 +53,22 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
             return false;
         });
 
-
         theme.setOnPreferenceChangeListener((preference, newValue) -> {
             boolean isVibrateOn = (Boolean) newValue;
             if(isVibrateOn){
                 theme.setSummary("Dark mode");
+                AppCompatDelegate
+                        .setDefaultNightMode(
+                                AppCompatDelegate
+                                        .MODE_NIGHT_YES);
             }else{
                 theme.setSummary("Light mode");
+                AppCompatDelegate
+                        .setDefaultNightMode(
+                                AppCompatDelegate
+                                        .MODE_NIGHT_NO);
             }
-
+            sessionHelper.setSession("toggle_theme", true);
             return true;
         });
 
@@ -74,7 +82,7 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
             return true;
         });
 
-        bin.setOnPreferenceClickListener(preference -> {
+       /* bin.setOnPreferenceClickListener(preference -> {
 
             if(bin.isChecked()){
                 bin.setSummary("Enabled");
@@ -103,9 +111,14 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
 
             }
             return true;
-        });
+        });*/
+    }
 
-
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        view.setBackgroundColor(getContext().getResources().getColor(R.color.backgroundColor));
+        return view;
     }
 
 }

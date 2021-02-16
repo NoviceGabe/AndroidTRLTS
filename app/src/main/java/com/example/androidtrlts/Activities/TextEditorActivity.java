@@ -215,7 +215,8 @@ public class TextEditorActivity extends AppCompatActivity {
                         backupFile = files.get(0);
                         boolean sync = sessionHelper.getSessionBoolean("pref_sync_save");
                         if(sync){
-                            backupItem.setTitle("synced");
+                            backupItem.setTitle("sync (auto)");
+                            backupItem.setChecked(true);
                         }else{
                             backupItem.setTitle("sync");
                         }
@@ -279,7 +280,6 @@ public class TextEditorActivity extends AppCompatActivity {
                     languages.add(l.getDisplayName());
                 }
                 Collections.sort(languages); // sort to ascending order
-                String pref_source_lang = "1";
 
                 editor.getCurrentHtmlAsync(s -> {
                     String ftext = Util.html2text(s).trim();
@@ -290,7 +290,7 @@ public class TextEditorActivity extends AppCompatActivity {
                         View view = getLayoutInflater().inflate(R.layout.dialog_lang_menu,null);
 
                         final Spinner sourceLangMenu = view.findViewById(R.id.source_lang_menu);
-
+                        String pref_source_lang = sessionHelper.getSessionString("pref_source_lang");
                         if(pref_source_lang.equals("1")){
                             String detected = "Language detected: " +
                                     language.getDisplayName().substring(0,1).toUpperCase() + language.getDisplayName().substring(1).toLowerCase();
@@ -329,6 +329,7 @@ public class TextEditorActivity extends AppCompatActivity {
 
 
                         builder.setPositiveButton("Ok", (dialog, which) -> {
+
                             String targetItem = targetLangMenu.getSelectedItem().toString();
                             String targetLang = TranslateLanguage.ENGLISH;
 
@@ -339,7 +340,25 @@ public class TextEditorActivity extends AppCompatActivity {
                                     break;
                                 }
                             }
-                            translateText(ftext, language.getCode(), targetLang);
+
+                            if(pref_source_lang.equals("1")) {
+                                translateText(ftext, language.getCode(), targetLang);
+                            }else{
+                                String sourceItem = sourceLangMenu.getSelectedItem().toString();
+                                String sourceLang = TranslateLanguage.ENGLISH;
+                                for (Object t : lang) {
+                                    Language l = new Language(t.toString());
+                                    if(l.getDisplayName().equals(sourceItem)){
+                                        sourceLang = l.getCode();
+                                        break;
+                                    }
+                                }
+
+                                translateText(ftext, sourceLang, targetLang);
+                            }
+
+
+
 
                         }).setNegativeButton("Dismiss", (dialog, which) -> dialog.dismiss()).setView(view);
 
@@ -398,7 +417,7 @@ public class TextEditorActivity extends AppCompatActivity {
                 return true;
 
             case R.id.backup:
-                if(!isSync && backupFile != null){
+                if(backupFile != null){
                     sync();
                 }else{
                     showBackupDialog();
@@ -476,7 +495,8 @@ public class TextEditorActivity extends AppCompatActivity {
         initPreferences();
         if(backupFile != null){
             if(isSync){
-                backupItem.setTitle("synced");
+                backupItem.setTitle("sync (auto)");
+                backupItem.setChecked(true);
             }else{
                 backupItem.setTitle("sync");
             }
@@ -921,9 +941,9 @@ public class TextEditorActivity extends AppCompatActivity {
                     progressDialog.setMessage("Uploading file....");
                     progressDialog.setCancelable(false);
 
-                    db.uploadFileToStorage(user.getUid(), ref.getId(), filePath, new Task() {
+                    db.uploadFileToStorage(user.getUid(), ref.getId(), filePath, new Task<Uri, Void>() {
                         @Override
-                        public void onSuccess(Object arg) {
+                        public void onSuccess(Uri uri) {
                             String dir = filePath.substring(0, filePath.lastIndexOf("/"));
                             String imagePath = dir +"/"+title+".jpg";
                             File file = new File(imagePath);
@@ -933,11 +953,13 @@ public class TextEditorActivity extends AppCompatActivity {
                             data.put("dir", dir);
                             data.put("filename", title);
                             data.put("id", ref.getId());
+                            data.put("fileUri", uri);
 
                             if(file.exists()){
-                                db.uploadFileToStorage(user.getUid(), ref.getId(), file.toString(), new Task() {
+                                db.uploadFileToStorage(user.getUid(), ref.getId(), file.toString(), new Task<Uri, Void>() {
                                     @Override
-                                    public void onSuccess(Object arg) {
+                                    public void onSuccess(Uri uri) {
+                                        data.put("imageUri", uri);
                                         db.addFile(data, new Task() {
                                             @Override
                                             public void onSuccess(Object arg) {
@@ -952,7 +974,7 @@ public class TextEditorActivity extends AppCompatActivity {
                                     }
 
                                     @Override
-                                    public void onError(Object arg) {
+                                    public void onError(Void avoid) {
                                         Util.showSnackBar(view1, "Document has no image", getResources().getColor(R.color.error));
                                     }
                                 }, null);
@@ -974,7 +996,7 @@ public class TextEditorActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onError(Object arg) {
+                        public void onError(Void avoid) {
                             Util.showSnackBar(view1, "Unable to backup file", getResources().getColor(R.color.error));
                         }
                     }, progressDialog);

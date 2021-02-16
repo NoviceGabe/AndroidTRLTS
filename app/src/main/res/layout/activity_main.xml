@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.MainActivity"
-    android:id="@+id/drawer">
+    android:id="@+id/drawer"
+    android:background="@color/backgroundColor">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,6 +41,9 @@
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"
         android:layout_gravity="start"
-        android:fitsSystemWindows="true"/>
+        android:fitsSystemWindows="true"
+        app:itemTextColor="@color/textColor"
+        app:itemIconTint="@color/textColorSecondary"
+        android:background="@color/backgroundColor"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

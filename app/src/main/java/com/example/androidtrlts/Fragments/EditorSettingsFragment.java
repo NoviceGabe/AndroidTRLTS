@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.DropDownPreference;
 import androidx.preference.Preference;
@@ -30,7 +31,7 @@ public class EditorSettingsFragment extends PreferenceFragmentCompat {
 
         SessionHelper sessionManager = new SessionHelper(getActivity());
 
-        String engineName = sessionManager.getSessionString("engine", "");
+        String engineName = sessionManager.getSessionString("pref_engine", "");
         switch (engineName){
             case "com.google.android.tts":
                 engineName = "Google Text-to-Speech";
@@ -85,7 +86,9 @@ public class EditorSettingsFragment extends PreferenceFragmentCompat {
         });
 
         reset_pref.setOnPreferenceClickListener(preference -> {
-            sessionManager.clearAllSession();
+            SessionHelper session = new SessionHelper(getActivity());
+            session.initDefaultSharedPreferences();
+            session.clearAllSession();
             if(mode.isChecked()){
                 mode.setChecked(false);
             }

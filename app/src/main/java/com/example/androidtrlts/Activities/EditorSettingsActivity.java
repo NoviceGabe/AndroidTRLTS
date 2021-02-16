@@ -1,5 +1,6 @@
 package com.example.androidtrlts.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -8,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.androidtrlts.Fragments.EditorSettingsFragment;
+import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
 
 public class EditorSettingsActivity extends AppCompatActivity {
     private Toolbar toolbar;
+    private SessionHelper sessionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +27,7 @@ public class EditorSettingsActivity extends AppCompatActivity {
 
         EditorSettingsFragment settingsFragment = new EditorSettingsFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.container_settings,settingsFragment).commit();
-
+        sessionHelper = new SessionHelper(this);
     }
 
     @Override

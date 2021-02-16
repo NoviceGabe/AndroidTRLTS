@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.PreviewImageActivity"
-    android:id="@+id/preview_image">
+    android:id="@+id/preview_image"
+    android:background="@color/backgroundColor">
 
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
@@ -57,6 +58,7 @@
         android:visibility="invisible"
         android:gravity="center"
         android:textSize="18dp"
+        android:textColor="@color/textColor"
         />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

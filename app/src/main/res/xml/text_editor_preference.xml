@@ -59,7 +59,8 @@
 
         <com.example.androidtrlts.Preferences.MyCheckBoxPreference
             android:key="pref_sync_save"
-            android:title="Sync files on save"
+            android:title="Auto-sync"
+            android:summary="Syncs file to cloud on save"
             android:defaultValue="false"
             app:iconSpaceReserved="false"
             android:dependency="pref_mode"/>

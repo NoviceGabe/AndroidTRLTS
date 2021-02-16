@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.androidtrlts.Helpers.SessionHelper;
 import com.example.androidtrlts.R;
 
 import mehdi.sakout.aboutpage.AboutPage;
@@ -26,9 +27,13 @@ public class AboutFragment extends Fragment {
         mehdi.sakout.aboutpage.Element adsElement = new mehdi.sakout.aboutpage.Element();
         adsElement.setTitle("Advertise with us");
 
+        SessionHelper sessionHelper = new SessionHelper(getActivity());
+        sessionHelper.initDefaultSharedPreferences();
+        boolean isDarkmodeOn = sessionHelper.getSessionBoolean("pref_main_theme");
 
         View aboutPage = new AboutPage(getContext())
                 .isRTL(false)
+                .enableDarkMode(isDarkmodeOn)
                 .setImage(R.mipmap.ic_launcher_round)
                 .setDescription(getString(R.string.app_description))
                 .addItem(versionElement)
@@ -36,6 +41,8 @@ public class AboutFragment extends Fragment {
                 .addGroup("Connect with us")
                 .addEmail("lazymacs017@gmail.com")
                 .create();
+
+
 
         return aboutPage;
     }

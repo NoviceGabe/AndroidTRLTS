@@ -16,9 +16,10 @@
     <color name="colorPrimary">#344955</color>
     <color name="colorPrimaryDark">#34384D</color>
     <color name="colorAccent">#D81B60</color>
-    <color name="backgroundColor">#FCFCFC</color>
-    <color name="textColor">#000000</color>
-    <color name="textColorSecondary">#89000000</color>
+
+    <color name="backgroundColor">#303030</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="textColorSecondary">@color/light_gray</color>
 
     <color name="warning">#FF9800</color>
     <color name="success">#029683</color>

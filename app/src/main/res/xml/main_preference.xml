@@ -20,11 +20,11 @@
             android:defaultValue="false"
             app:iconSpaceReserved="false"/>
 
-        <com.example.androidtrlts.Preferences.MySwitchPreference
+        <!--com.example.androidtrlts.Preferences.MySwitchPreference
             android:key="pref_bin"
             android:title="@string/bin_cap"
             android:defaultValue="false"
-            app:iconSpaceReserved="false" />
+            app:iconSpaceReserved="false" /-->
 
         <com.example.androidtrlts.Preferences.MySwitchPreference
             android:key="pref_text_recog_mode"
@@ -34,7 +34,8 @@
 
         <com.example.androidtrlts.Preferences.MyCheckBoxPreference
             android:key="pref_sync"
-            android:title="Auto-sync files"
+            android:title="Auto-sync"
+            android:summary="Syncs files from cloud to local device on startup"
             android:defaultValue="false"
             app:iconSpaceReserved="false" />
 

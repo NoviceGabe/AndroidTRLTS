@@ -102,15 +102,28 @@ public class MainActivity extends AppCompatActivity{
     private MenuItem signIn;
     private MenuItem signOut;
 
-    private boolean pref_auto_save;
-    private boolean pref_save_shared_files;
-    private String pref_font_family;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        sessionHelper = new SessionHelper(this);
+        sessionHelper.initDefaultSharedPreferences();
+        if(sessionHelper.getSessionBoolean("pref_main_theme")){
+            AppCompatDelegate
+                    .setDefaultNightMode(
+                            AppCompatDelegate
+                                    .MODE_NIGHT_YES);
+        }else{
+            AppCompatDelegate
+                    .setDefaultNightMode(
+                            AppCompatDelegate
+                                    .MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         setContentView(R.layout.activity_main);
+
+
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -220,7 +233,6 @@ public class MainActivity extends AppCompatActivity{
             return true;
         });
 
-        sessionHelper = new SessionHelper(this);
         permissionHelper = new PermissionHelper(this);
         google = new GoogleLib(MainActivity.this);
         init();
@@ -230,6 +242,13 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        SessionHelper sessionHelper = new SessionHelper(MainActivity.this);
+        if(sessionHelper.has("toggle_theme") && sessionHelper.getSessionBoolean("toggle_theme")){
+            sessionHelper.setSession("toggle_theme", false);
+            finish();
+            startActivity(new Intent(this, getClass()));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }
         loadFragment(FRAGMENT_STATE_REPLACE, null);
     }
 
@@ -382,8 +401,8 @@ public class MainActivity extends AppCompatActivity{
 
             dialog.show();
 
-        } else if (itemId == R.id.bin) {
-        } else if (itemId == R.id.settings) {
+        } /*else if (itemId == R.id.bin) {
+        } */else if (itemId == R.id.settings) {
             Intent intent = new Intent(MainActivity.this, MainSettingsActivity.class);
             startActivity(intent);
         } else if(itemId == R.id.signin){
