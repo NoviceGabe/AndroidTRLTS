@@ -13,6 +13,7 @@
             android:textSize="20sp"
             android:layoutDirection="rtl"
             android:textAlignment="textStart"
-            android:layout_gravity="start"/>
+            android:layout_gravity="start"
+        android:textColor="@color/textColor"/>
 
 </LinearLayout>

@@ -9,30 +9,51 @@
         android:layout_height="wrap_content"
         android:text="Language detected:"
         android:layout_marginBottom="10dp"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:textColor="@color/textColor"/>
 
     <TextView
         android:id="@+id/source_lang"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Source language"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:textColor="@color/textColor"/>
     <Spinner
         android:id="@+id/source_lang_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_marginBottom="10dp"
+        android:background="@color/backgroundColor"
         />
 
     <TextView
         android:id="@+id/target_lang"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Target language"/>
-    <Spinner
-        android:id="@+id/target_lang_menu"
+        android:text="Target language"
+        android:textColor="@color/textColorSecondary"/>
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="30dp"
+        android:background="@color/backgroundColor"
+        android:layout_marginTop="15dp"  >
+        <Spinner
+            android:id="@+id/target_lang_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:minHeight="0dp"
+            />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_baseline_arrow_drop_down_24"
+            android:tint="@color/textColor"
+            />
+    </RelativeLayout>
 </LinearLayout>

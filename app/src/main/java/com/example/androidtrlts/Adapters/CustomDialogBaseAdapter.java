@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -80,10 +81,10 @@ public class CustomDialogBaseAdapter extends BaseAdapter {
         }
 
         textViewItemName.setText(currentItem.getItemName());
+        textViewItemName.setTextColor(this.context.getResources().getColor(R.color.textColor));
         imageView.setImageURI(null);
         imageView.setImageURI(imgUri);
-        int color = Color.parseColor("#000000"); //The color u want
-        imageView.setColorFilter(color);
+        imageView.setColorFilter(this.context.getResources().getColor(R.color.textColor));
 
         return view;
     }

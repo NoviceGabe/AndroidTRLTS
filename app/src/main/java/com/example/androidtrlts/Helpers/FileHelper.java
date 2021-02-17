@@ -46,6 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.channels.FileChannel;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -824,6 +825,22 @@ public class FileHelper {
         }
 
         item.delete();
+    }
+
+    public static String getFileSize(long size){
+        DecimalFormat df = new DecimalFormat("0.00");
+        String fileSize = "0 B";
+
+        float sizeKb = 1024.0f;
+        float sizeMb = sizeKb * sizeKb;
+        float sizeGb = sizeMb * sizeKb;
+
+        if(size < sizeMb){
+            return  fileSize = df.format(size / sizeKb) + " Kb";
+        }else if(size < sizeGb){
+            return  fileSize = df.format(size / sizeMb) + " Mb";
+        }
+        return fileSize;
     }
 
     public enum FileType {

@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,7 +63,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.customDialog);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         mView = inflater.inflate(R.layout.dialog_save_file_list_item, null);
 
@@ -175,7 +176,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
             //If the file was already existed, the user will choose if he/she will overwrite the file or not
             //Otherwise if the file wasn't existed before then it will be saved as a new file
             if(file.exists()){
-                final AlertDialog.Builder alert1 = new AlertDialog.Builder(getActivity());
+                final AlertDialog.Builder alert1 = new AlertDialog.Builder(getActivity(), R.style.customDialog);
                 View mView1 = getLayoutInflater().inflate(R.layout.dialog_replace_file, null);
 
                 alert1.setTitle("Rename file?");
@@ -223,8 +224,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment  {
 
         alertDialog = builder.create();
         alertDialog.setCanceledOnTouchOutside(true);
-        Window window = alertDialog.getWindow();
-        window.setBackgroundDrawableResource(R.color.backgroundColor);
+
 
         return alertDialog;
     }

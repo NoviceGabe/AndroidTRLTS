@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -273,114 +274,19 @@ public class TextEditorActivity extends AppCompatActivity {
                 return true;
             case R.id.trans_lang:
 
-                List lang = TranslateLanguage.getAllLanguages();
-                List<String> languages = new ArrayList<>();
-                for (Object s : lang) {
-                    Language l = new Language(s.toString());
-                    languages.add(l.getDisplayName());
-                }
-                Collections.sort(languages); // sort to ascending order
-
                 editor.getCurrentHtmlAsync(s -> {
                     String ftext = Util.html2text(s).trim();
-                    IndetifyLanguage(ftext, (IFetchContent<String>) langCode -> {
-                        final Language language = new Language(langCode);
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(TextEditorActivity.this);
-                        View view = getLayoutInflater().inflate(R.layout.dialog_lang_menu,null);
-
-                        final Spinner sourceLangMenu = view.findViewById(R.id.source_lang_menu);
-                        String pref_source_lang = sessionHelper.getSessionString("pref_source_lang");
-                        if(pref_source_lang.equals("1")){
-                            String detected = "Language detected: " +
-                                    language.getDisplayName().substring(0,1).toUpperCase() + language.getDisplayName().substring(1).toLowerCase();
-
-                            TextView lang_detected = view.findViewById(R.id.lang_detected);
-                            lang_detected.setVisibility(View.VISIBLE);
-                            lang_detected.setText(detected);
-                            lang_detected.setTextColor(Color.BLACK);
-                        }else{
-                            sourceLangMenu.setVisibility(View.VISIBLE);
-                            TextView sourceLangTitle = view.findViewById(R.id.source_lang);
-                            sourceLangTitle.setVisibility(View.VISIBLE);
-                            ArrayAdapter<String> sourceLangAdapter = new ArrayAdapter<String>(TextEditorActivity.this,
-                                    android.R.layout.simple_spinner_item, languages);
-
-                            sourceLangAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            sourceLangMenu.setAdapter(sourceLangAdapter);
+                    IndetifyLanguage(ftext, new Task<String, String>() {
+                        @Override
+                        public void onSuccess(String langCode) {
+                            showTranslateDialog(ftext, langCode);
                         }
 
-                        final Spinner targetLangMenu = view.findViewById(R.id.target_lang_menu);
-                        TextView targetLangTitle = view.findViewById(R.id.target_lang);
-                        ArrayAdapter<String> targetLangAdapter = new ArrayAdapter<>(TextEditorActivity.this,
-                                android.R.layout.simple_spinner_item, languages);
-
-                        targetLangAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        targetLangMenu.setAdapter(targetLangAdapter);
-
-                        TextView alertDialogTitle = new TextView(TextEditorActivity.this);
-                        alertDialogTitle.setText("Translate");
-                        alertDialogTitle.setPadding(20, 30, 20, 10);
-                        alertDialogTitle.setTextSize(20f);
-                        alertDialogTitle.setTextColor(Color.BLACK);
-
-                        builder.setCustomTitle(alertDialogTitle);
-                        builder.setView(view);
-
-
-                        builder.setPositiveButton("Ok", (dialog, which) -> {
-
-                            String targetItem = targetLangMenu.getSelectedItem().toString();
-                            String targetLang = TranslateLanguage.ENGLISH;
-
-                            for (Object t : lang) {
-                                Language l = new Language(t.toString());
-                                if(l.getDisplayName().equals(targetItem)){
-                                    targetLang = l.getCode();
-                                    break;
-                                }
-                            }
-
-                            if(pref_source_lang.equals("1")) {
-                                translateText(ftext, language.getCode(), targetLang);
-                            }else{
-                                String sourceItem = sourceLangMenu.getSelectedItem().toString();
-                                String sourceLang = TranslateLanguage.ENGLISH;
-                                for (Object t : lang) {
-                                    Language l = new Language(t.toString());
-                                    if(l.getDisplayName().equals(sourceItem)){
-                                        sourceLang = l.getCode();
-                                        break;
-                                    }
-                                }
-
-                                translateText(ftext, sourceLang, targetLang);
-                            }
-
-
-
-
-                        }).setNegativeButton("Dismiss", (dialog, which) -> dialog.dismiss()).setView(view);
-
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-
-                        // get screen width and height in pixels
-                        DisplayMetrics displayMetrics = new DisplayMetrics();
-                        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                        int displayWidth = displayMetrics.widthPixels;
-
-                        Window window = alertDialog.getWindow();
-                        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-                        layoutParams.copyFrom(window.getAttributes());
-
-                        // alert dialog width equal to 90% of screen width
-                        int dialogWindowWidth = (int) (displayWidth * 0.90f);
-
-                        layoutParams.width = dialogWindowWidth;
-                        layoutParams.height = WRAP_CONTENT;
-                        window.setAttributes(layoutParams);
-
+                        @Override
+                        public void onError(String error) {
+                            View  view = findViewById(R.id.text_edit_layout);
+                            Util.showSnackBar(view, error, getResources().getColor(R.color.error));
+                        }
                     });
                 });
 
@@ -465,16 +371,25 @@ public class TextEditorActivity extends AppCompatActivity {
                 //and identify the text language
                 editor.getCurrentHtmlAsync(str -> {
                     final String text = Util.html2text(str).trim();
-                    IndetifyLanguage(text, (IFetchContent<String>) langCode -> {
-                        Language language = new Language(langCode);
-                        Bundle bundle = new Bundle();
-                        bundle.putString("text",text);
-                        bundle.putString("code",language.getCode());
-                        bundle.putString("lang", language.getDisplayName());
-                        TTSDialogFragment fragment = new TTSDialogFragment();
-                        fragment.setArguments(bundle);
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        fragment.show(fragmentManager, text);
+                    IndetifyLanguage(text, new Task<String, String>() {
+                        @Override
+                        public void onSuccess(String langCode) {
+                            Language language = new Language(langCode);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("text",text);
+                            bundle.putString("code",language.getCode());
+                            bundle.putString("lang", language.getDisplayName());
+                            TTSDialogFragment fragment = new TTSDialogFragment();
+                            fragment.setArguments(bundle);
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            fragment.show(fragmentManager, text);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            View  view = findViewById(R.id.text_edit_layout);
+                            Util.showSnackBar(view, error, getResources().getColor(R.color.error));
+                        }
                     });
                 });
 
@@ -503,7 +418,6 @@ public class TextEditorActivity extends AppCompatActivity {
         }
 
     }
-
 
     private void initPreferences(){
         // shared preferences
@@ -593,13 +507,15 @@ public class TextEditorActivity extends AppCompatActivity {
         }
     }
 
-
     private void initEditor(@NotNull String text){
-        ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
+        ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this, R.style.customDialog);
         progressDialog.setTitle("Initializing text editor");
         progressDialog.setMessage("Preparing text..");
         progressDialog.show();
         progressDialog.setCancelable(false);
+
+        Window window = progressDialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
 
         if(text.length() > 0){
             text = text.replaceAll("\n","<br>"); //format result text to html
@@ -805,11 +721,15 @@ public class TextEditorActivity extends AppCompatActivity {
         textView.setText("Export");
         textView.setPadding(20, 30, 20, 30);
         textView.setTextSize(20f);
+        textView.setTextColor(getResources().getColor(R.color.textColor));
 
         builder.setCustomTitle(textView);
 
         final AlertDialog dialog = builder.create();
         dialog.show();
+
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             View  mview = findViewById(R.id.text_edit_layout);
@@ -856,11 +776,15 @@ public class TextEditorActivity extends AppCompatActivity {
         textView.setText("Share");
         textView.setPadding(20, 30, 20, 30);
         textView.setTextSize(20f);
+        textView.setTextColor(getResources().getColor(R.color.textColor));
 
         builder.setCustomTitle(textView);
 
         final AlertDialog dialog = builder.create();
         dialog.show();
+
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             switch ((int)id){
@@ -911,12 +835,16 @@ public class TextEditorActivity extends AppCompatActivity {
         textView.setText("Backup");
         textView.setPadding(20, 30, 20, 30);
         textView.setTextSize(20f);
+        textView.setTextColor(getResources().getColor(R.color.textColor));
 
         builder.setCustomTitle(textView);
         builder.setCustomTitle(textView);
 
         final AlertDialog dialog = builder.create();
         dialog.show();
+
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             if(id == 0){
@@ -1010,6 +938,110 @@ public class TextEditorActivity extends AppCompatActivity {
         });
     }
 
+    private void showTranslateDialog(String text, String langCode){
+        List lang = TranslateLanguage.getAllLanguages();
+        List<String> languages = new ArrayList<>();
+        for (Object s : lang) {
+            Language l = new Language(s.toString());
+            languages.add(l.getDisplayName());
+        }
+        Collections.sort(languages); // sort to ascending order
+
+        final Language language = new Language(langCode);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(TextEditorActivity.this,  R.style.customDialog);
+        View view = getLayoutInflater().inflate(R.layout.dialog_lang_menu,null);
+
+        final Spinner sourceLangMenu = view.findViewById(R.id.source_lang_menu);
+        String pref_source_lang = sessionHelper.getSessionString("pref_source_lang");
+        if(pref_source_lang.equals("1")){
+            String detected = "Language detected: " +
+                    language.getDisplayName().substring(0,1).toUpperCase() + language.getDisplayName().substring(1).toLowerCase();
+
+            TextView lang_detected = view.findViewById(R.id.lang_detected);
+            lang_detected.setVisibility(View.VISIBLE);
+            lang_detected.setText(detected);
+        }else{
+            sourceLangMenu.setVisibility(View.VISIBLE);
+            TextView sourceLangTitle = view.findViewById(R.id.source_lang);
+            sourceLangTitle.setVisibility(View.VISIBLE);
+            ArrayAdapter<String> sourceLangAdapter = new ArrayAdapter<String>(TextEditorActivity.this,
+                    android.R.layout.simple_spinner_item, languages);
+
+            sourceLangAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            sourceLangMenu.setAdapter(sourceLangAdapter);
+        }
+
+        final Spinner targetLangMenu = view.findViewById(R.id.target_lang_menu);
+        TextView targetLangTitle = view.findViewById(R.id.target_lang);
+        ArrayAdapter<String> targetLangAdapter = new ArrayAdapter<>(TextEditorActivity.this,
+                R.layout.spinner_item, languages);
+
+        targetLangAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        targetLangMenu.setAdapter(targetLangAdapter);
+        targetLangMenu.setPopupBackgroundResource(R.drawable.spinner);
+
+        TextView alertDialogTitle = new TextView(TextEditorActivity.this);
+        alertDialogTitle.setText("Translate");
+        alertDialogTitle.setPadding(20, 30, 20, 10);
+        alertDialogTitle.setTextSize(20f);
+        alertDialogTitle.setTextColor(getResources().getColor(R.color.textColor));
+
+        builder.setCustomTitle(alertDialogTitle);
+        builder.setView(view);
+
+        builder.setPositiveButton("Ok", (dialog, which) -> {
+
+            String targetItem = targetLangMenu.getSelectedItem().toString();
+            String targetLang = TranslateLanguage.ENGLISH;
+
+            for (Object t : lang) {
+                Language l = new Language(t.toString());
+                if(l.getDisplayName().equals(targetItem)){
+                    targetLang = l.getCode();
+                    break;
+                }
+            }
+
+            if(pref_source_lang.equals("1")) {
+                translateText(text, language.getCode(), targetLang);
+            }else{
+                String sourceItem = sourceLangMenu.getSelectedItem().toString();
+                String sourceLang = TranslateLanguage.ENGLISH;
+                for (Object t : lang) {
+                    Language l = new Language(t.toString());
+                    if(l.getDisplayName().equals(sourceItem)){
+                        sourceLang = l.getCode();
+                        break;
+                    }
+                }
+
+                translateText(text, sourceLang, targetLang);
+            }
+
+        }).setNegativeButton("Dismiss", (dialog, which) -> dialog.dismiss()).setView(view);
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+
+        // get screen width and height in pixels
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int displayWidth = displayMetrics.widthPixels;
+
+        Window window = alertDialog.getWindow();
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(window.getAttributes());
+
+        // alert dialog width equal to 90% of screen width
+        int dialogWindowWidth = (int) (displayWidth * 0.90f);
+
+        layoutParams.width = dialogWindowWidth;
+        layoutParams.height = WRAP_CONTENT;
+        window.setAttributes(layoutParams);
+    }
+
     private void sync(){
         final View view = findViewById(R.id.text_edit_layout);
         ProgressDialog progressDialog = new ProgressDialog(TextEditorActivity.this);
@@ -1095,32 +1127,30 @@ public class TextEditorActivity extends AppCompatActivity {
                             editor.setHtml(translatedText);
                             enableSave();
 
-                            Util.showSnackBarUndo(view, "text successfully translated", getResources().getColor(R.color.success),
+                            Util.showSnackBarUndo(view, "Text successfully translated", getResources().getColor(R.color.success),
                                     () -> {
                                         editor.setHtml(text);
                                     });
                         }))
                 .addOnFailureListener(e ->
-                        Util.showSnackBar(view, "unable to download Model!", getResources().getColor(R.color.error)));
+                        Util.showSnackBar(view, "Unable to download Model!", getResources().getColor(R.color.error)));
     }
 
-    private void IndetifyLanguage(String text, IFetchContent f){
+    private void IndetifyLanguage(String text, Task task){
         LanguageIdentifier languageIdentifier =
                 LanguageIdentification.getClient();
         languageIdentifier.identifyLanguage(text)
                 .addOnSuccessListener(
                         languageCode -> {
                             if (languageCode.equals("und")) {
-                                View  view = findViewById(R.id.text_edit_layout);
-                                Util.showSnackBar(view, "Unable to detect language", getResources().getColor(R.color.error));
+                                task.onError("Unable to detect language");
                             } else {
-                                f.onFetch(languageCode);
+                                task.onSuccess(languageCode);
                             }
                         })
                 .addOnFailureListener(
                         e -> {
-                            View  view = findViewById(R.id.text_edit_layout);
-                            Util.showSnackBar(view, "Unable to detect language", getResources().getColor(R.color.error));
+                            task.onError("Unable to detect language");
                         });
     }
 

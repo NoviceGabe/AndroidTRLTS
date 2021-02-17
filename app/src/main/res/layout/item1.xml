@@ -20,6 +20,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:layout_marginLeft="@dimen/margin_default"
             android:text="Help"
+            android:textColor="@color/textColor"
             />
 
     </LinearLayout>

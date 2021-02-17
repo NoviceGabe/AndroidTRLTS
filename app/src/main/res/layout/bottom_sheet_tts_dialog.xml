@@ -3,14 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent" android:gravity="center_horizontal"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/backgroundColor">
 
     <TextView
         android:id="@+id/pitch_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Pitch"
-        android:textSize="16sp"/>
+        android:textSize="16sp"
+        android:textColor="@color/textColorSecondary"/>
 
     <SeekBar
         android:id="@+id/pitch"
@@ -23,7 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Speed"
-        android:textSize="16sp"/>
+        android:textSize="16sp"
+        android:textColor="@color/textColorSecondary"/>
 
     <SeekBar
         android:id="@+id/speed"

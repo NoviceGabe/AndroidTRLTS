@@ -39,20 +39,25 @@ public class HelpFragment extends Fragment {
         text.add("Tap <img src=\"copy\"> icon to copy extracted text to the clipboard.");
         text.add("Tap <img src=\"translate\"> icon to translate text to target language.");
         text.add("Tap <img src=\"audio\"> icon to convert text to audible sound.");
-        text.add("Tap <img src=\"save\"> icon to save the text into a text file. You can also save it in other format such as html.");
-        text.add("You can search a file on the homepage by using the <img src=\"search\"> icon");
+        text.add("Tap <img src=\"save\"> icon to save the text into a text document. You can also save it in other format such as html.");
+        text.add("You can search a document on the homepage by using the <img src=\"search\"> icon");
         text.add("To create a folder to organize files, tap <img src=\"create_folder\"> icon");
         text.add("Tap any scanned item to view its content on the text editor.");
-        text.add("Long press on any item to show the context menu. Scanned items have options rename/delete/share/encrypt(decrypt/remove password)/details. Folders have options rename/delete/details.");
+        text.add("Long press on any item to show the context menu. Scanned items have options rename/delete/share/details. Folders have options rename/delete/details.");
         text.add("On the main settings, you can change the app theme by switching theme to light mode or dark mode. To move deleted files to the bin toggle bin to enabled ");
-        text.add("To export a file to pdf format select the export item on editor options menu.");
-        text.add("To share a text or a file select the share item on editor options menu.");
-        text.add("To backup file to cloud select the backup item on editor options menu.");
+        text.add("To export a document to pdf format select the export item on editor options menu.");
+        text.add("To share a text or a document select the share item on editor options menu.");
+        text.add("You need to sign in first to backup or sync your documents to the cloud");
+        text.add("To backup a document to the cloud select the backup item on editor options menu.");
+        text.add("You can sync documents to the cloud.");
+        text.add("To sync documents to the cloud automatically check the auto-sync in the editor settings.");
+        text.add("To sync documents from cloud to your local device check the auto-sync in the main settings");
         text.add("You can style and format text in the text editor using the editor’s bottom toolbar. You need to save it as an html file to see the effect. ");
         text.add("On the editor settings, you can change the appearance  of the text editor on the appearance preference.");
         text.add("You can change the mode of the text editor to read-only or read & write.");
         text.add("Check the show keyboard on editor startup to show keyboard right after launching the text editor.");
         text.add("You can change the source language detection to auto or manual in the text source language option.");
+        text.add("You can switch the text recognition mode to on-device or on-cloud in the settings.");
         text.add("To enable auto save check the auto save checkbox.");
 
 

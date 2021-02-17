@@ -42,8 +42,6 @@ public class AboutFragment extends Fragment {
                 .addEmail("lazymacs017@gmail.com")
                 .create();
 
-
-
         return aboutPage;
     }
 }

@@ -4,13 +4,20 @@ package com.example.androidtrlts.Helpers;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.net.Uri;
 import android.provider.Settings;
+import android.view.Window;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.androidtrlts.Activities.TextEditorActivity;
+import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.Service;
 
 public class PermissionHelper {
@@ -71,7 +78,7 @@ public class PermissionHelper {
     }
 
     public void showRational(String title, String message, Service service){
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.customDialog);
         builder
                 .setTitle(title)
                 .setMessage(message)
@@ -80,11 +87,15 @@ public class PermissionHelper {
                 .setPositiveButton("Retry", (dialog, which) -> {
                     service.callback();
                     dialog.dismiss();
-                }).show();
+                });
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
     }
 
     public void showDialogForSettings(String title, String message){
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.customDialog);
         builder
                 .setTitle(title)
                 .setMessage(message)
@@ -92,7 +103,10 @@ public class PermissionHelper {
                 .setPositiveButton("Settings", (dialog, which) -> {
                     gotoSettings();
                     dialog.dismiss();
-                }).show();
+                });
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public interface PermissionAskListener{

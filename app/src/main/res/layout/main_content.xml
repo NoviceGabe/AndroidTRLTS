@@ -16,7 +16,9 @@
                 android:width="8dp"
                 android:layout_marginRight="5dp"
                 android:src="@drawable/ic_baseline_arrow_back_24dp"
-                android:background="@null"/>
+                android:background="@null"
+                android:tint="@color/textColor"
+                />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"

@@ -31,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -91,8 +92,8 @@ public class MainActivity extends AppCompatActivity{
     private SessionHelper sessionHelper;
     private PermissionHelper permissionHelper;
 
-    private static final int FRAGMENT_STATE_REPLACE = 1;
-    private static final int FRAGMENT_STATE_ADD = 2;
+    public static final int FRAGMENT_STATE_REPLACE = 1;
+    public static final int FRAGMENT_STATE_ADD = 2;
 
     public static Util.Property property = Util.Property.NAME;
     public static Util.Order order = Util.Order.ASC;
@@ -190,7 +191,7 @@ public class MainActivity extends AppCompatActivity{
         });
 
         fab_url.setOnClickListener(v -> {
-            alertDialogInput("URL", R.layout.input_url, (IFetchContent<String>) link -> {
+            alertDialogInput("URL", "", R.layout.input_url, (IFetchContent<String>) link -> {
                 if(link.isEmpty()){
                     Toast.makeText(MainActivity.this, "URL is required!", Toast.LENGTH_SHORT).show();
                 }else{
@@ -313,7 +314,8 @@ public class MainActivity extends AppCompatActivity{
         int itemId = item.getItemId();
         if (itemId == R.id.search_bar) {
         } else if (itemId == R.id.create_folder) {
-            alertDialogInput("Create Folder", R.layout.text_input, (IFetchContent<String>) content -> {
+            alertDialogInput("Create Folder", "New folder", R.layout.text_input, (IFetchContent<String>) content -> {
+
                 if(content.isEmpty()){
                     Toast.makeText(MainActivity.this, "Please enter a name", Toast.LENGTH_SHORT).show();
                 }else if(!Validator.isNameValid(content)){
@@ -324,7 +326,7 @@ public class MainActivity extends AppCompatActivity{
                     if(dir.isDirectory() && dir.exists()){
                         Toast.makeText(MainActivity.this, "folder already existed!", Toast.LENGTH_SHORT).show();
                     }else{
-                        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+                        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this, R.style.customDialog);
                         progressDialog.setMessage("Processing..");
 
                         CustomTask task = new CustomTask(progressDialog, new CustomTask.TaskListener() {
@@ -351,7 +353,7 @@ public class MainActivity extends AppCompatActivity{
             });
         } else if (itemId == R.id.sort) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.customDialog);
             View row = getLayoutInflater().inflate(R.layout.sort,null);
             ListView listView = row.findViewById(R.id.listView);
 
@@ -395,7 +397,7 @@ public class MainActivity extends AppCompatActivity{
             textView.setPadding(20, 30, 20, 30);
             textView.setTextSize(20f);
             builder.setCustomTitle(textView);
-
+            textView.setTextColor(getResources().getColor(R.color.textColor));
 
             final AlertDialog dialog = builder.create();
 
@@ -538,7 +540,6 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-
     private void loadAboutFragment(final int FRAGMENT_STATE){
         FragmentManager fragmentManager;
         FragmentTransaction fragmentTransaction;
@@ -596,7 +597,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void alertDialogInput(String title, int layoutId, IFetchContent fetch){
+    public void alertDialogInput(String title, String value, int layoutId, IFetchContent fetch){
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
         TextView tvTitle = new TextView(this);
@@ -604,13 +605,21 @@ public class MainActivity extends AppCompatActivity{
         tvTitle.setTextSize(20f);
         tvTitle.setText(title);
         tvTitle.setTypeface(tvTitle.getTypeface(), Typeface.BOLD);
+        tvTitle.setTextColor(getResources().getColor(R.color.textColor));
         builder.setCustomTitle(tvTitle);
 
         View mView = getLayoutInflater().inflate(layoutId, null);
         final EditText input = (EditText) mView.findViewById(R.id.input);
-        File file =  FileHelper.validateFileName(FileList.currentDirPath+ "New folder");
-        String name = FileHelper.getName(file);
+
+        String name = "";
+
+        if(value.length() > 0){
+            File file =  FileHelper.validateFileName(FileList.currentDirPath+ value);
+            name = FileHelper.getName(file);
+        }
+
         input.setText(name);
+        input.setTextColor(getResources().getColor(R.color.textColorSecondary));
         input.setOnFocusChangeListener((v, hasFocus) -> input.post(() -> {
             InputMethodManager inputMethodManager = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
@@ -625,7 +634,11 @@ public class MainActivity extends AppCompatActivity{
         });
         builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel());
 
-        builder.show();
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+        Window window = alertDialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.backgroundColor);
     }
 
     public void exit(){
@@ -634,8 +647,9 @@ public class MainActivity extends AppCompatActivity{
         if(pref_confirm_on_exit_app){
             finish();
         }else{
-            new AlertDialog.Builder(MainActivity.this)
-                    .setMessage("Are you sure you want to exit?")
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.customDialog);
+
+            builder.setMessage("Are you sure you want to exit?")
                     .setNegativeButton("NO", null) // dismisses by default
                     .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                         @Override public void onClick(DialogInterface dialog, int which) {

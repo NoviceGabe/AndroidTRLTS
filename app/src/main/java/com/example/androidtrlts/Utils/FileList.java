@@ -69,6 +69,8 @@ public class FileList {
             this.items.addAll(items);
             itemAdapter = new ItemAdapter(activity, items, R.layout.item);
             listView.setAdapter(itemAdapter);
+            itemAdapter.notifyDataSetChanged();
+
 
             if(listView.getVisibility() == View.GONE){
                 listView.setVisibility(View.VISIBLE);
