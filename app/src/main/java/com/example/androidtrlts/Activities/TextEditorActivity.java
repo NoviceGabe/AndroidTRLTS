@@ -175,10 +175,10 @@ public class TextEditorActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
         // if save button is enable, save file on activity change
-        if(enableSave){
+        super.onDestroy();
+        if (enableSave) {
             pref_auto_save = sessionHelper.getSessionBoolean("pref_auto_save");
             onAutoSave(pref_auto_save);
         }
@@ -203,7 +203,7 @@ public class TextEditorActivity extends AppCompatActivity {
         }
 
         // if user logged in
-        if(user != null && filePath != null){
+        if(user != null && filePath != null && !filePath.isEmpty()){
             String dir = filePath.substring(0, filePath.lastIndexOf("/"));
             String name = filePath.substring(filePath.lastIndexOf("/")+1, filePath.lastIndexOf("."));
             com.example.androidtrlts.Model.File file = new com.example.androidtrlts.Model.File();
@@ -620,6 +620,7 @@ public class TextEditorActivity extends AppCompatActivity {
             bw.close();
 
             isFileSave = true; //a file has been saved
+            TextEditorActivity.filePath = filePath;
             disableSave();// disable button
 
             if(!init){
@@ -696,7 +697,7 @@ public class TextEditorActivity extends AppCompatActivity {
         }else{
             TextEditorActivity.super.onBackPressed();
         }
-        filePath = "";
+        filePath = null;
 
     }
 
@@ -850,6 +851,8 @@ public class TextEditorActivity extends AppCompatActivity {
             if(id == 0){
                 if(enableSave){
                     onAutoSave(true);
+                    Toast.makeText(TextEditorActivity.this, "Tap the backup item again.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
                 final View view1 = findViewById(R.id.text_edit_layout);
@@ -869,28 +872,29 @@ public class TextEditorActivity extends AppCompatActivity {
                     progressDialog.setMessage("Uploading file....");
                     progressDialog.setCancelable(false);
 
-                    db.uploadFileToStorage(user.getUid(), ref.getId(), filePath, new Task<Uri, Void>() {
+                    db.uploadFileToStorage(user.getUid(), ref.getId(), filePath, new Task<Uri, String>() {
                         @Override
                         public void onSuccess(Uri uri) {
                             String dir = filePath.substring(0, filePath.lastIndexOf("/"));
                             String imagePath = dir +"/"+title+".jpg";
                             File file = new File(imagePath);
-                            Map<String, Object> data = new HashMap<>();
+                            Map<String, String> data = new HashMap<>();
                             data.put("uid", user.getUid());
                             data.put("name", user.getDisplayName());
                             data.put("dir", dir);
                             data.put("filename", title);
                             data.put("id", ref.getId());
-                            data.put("fileUri", uri);
+                            data.put("fileUri", uri.toString());
 
                             if(file.exists()){
                                 db.uploadFileToStorage(user.getUid(), ref.getId(), file.toString(), new Task<Uri, Void>() {
                                     @Override
                                     public void onSuccess(Uri uri) {
-                                        data.put("imageUri", uri);
+                                        data.put("imageUri", uri.toString());
                                         db.addFile(data, new Task() {
                                             @Override
                                             public void onSuccess(Object arg) {
+                                                backupItem.setTitle("sync");
                                                 Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
                                             }
 
@@ -913,6 +917,7 @@ public class TextEditorActivity extends AppCompatActivity {
                                db.addFile(data, new Task() {
                                             @Override
                                             public void onSuccess(Object arg) {
+                                                backupItem.setTitle("sync");
                                                 Util.showSnackBar(view1, "Success", getResources().getColor(R.color.success));
                                             }
 
@@ -924,13 +929,15 @@ public class TextEditorActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onError(Void avoid) {
+                        public void onError(String error) {
+                            Log.d("error", error);
                             Util.showSnackBar(view1, "Unable to backup file", getResources().getColor(R.color.error));
                         }
                     }, progressDialog);
 
 
                 } catch (Exception e) {
+                    Log.d("error", e.getMessage());
                         e.printStackTrace();
                 }
                 dialog.dismiss();
@@ -1090,7 +1097,9 @@ public class TextEditorActivity extends AppCompatActivity {
         if(autoSave){
             // @ if - if the file is new and not save yet validate the filename before saving
             // @ else - overwrite the file
-            if(filePath.isEmpty() && !isFileSave){
+            String test = filePath;
+            boolean f = isFileSave;
+            if(filePath == null && !isFileSave){
                 File file = FileHelper.validateFileName(FileList.currentDirPath+"/"+title+".txt");
                 save(false, file.toString());
             }else{

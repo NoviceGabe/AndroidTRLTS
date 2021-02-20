@@ -13,13 +13,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import androidx.preference.SwitchPreference;
 
+import com.example.androidtrlts.Activities.AccountActivity;
 import com.example.androidtrlts.Activities.MainActivity;
+import com.example.androidtrlts.Activities.MainSettingsActivity;
 import com.example.androidtrlts.Helpers.FileHelper;
 import com.example.androidtrlts.Helpers.SessionHelper;
+import com.example.androidtrlts.Preferences.MyPreference;
 import com.example.androidtrlts.R;
 import com.example.androidtrlts.Utils.FileList;
 import com.example.androidtrlts.Utils.Route;
@@ -36,6 +40,7 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
         SwitchPreference mode = findPreference("pref_text_recog_mode");
         CheckBoxPreference exit = findPreference("pref_confirm_on_exit");
         SessionHelper sessionHelper = new SessionHelper(getActivity());
+        Preference account = (Preference) findPreference("pref_account");
 
 /*        if(bin.isChecked()){
             bin.setSummary("Enabled");
@@ -79,6 +84,12 @@ public class MainSettingsFragment extends PreferenceFragmentCompat {
             }else{
                 mode.setSummary("On-device - Recognizes latin characters (results are less precise)");
             }
+            return true;
+        });
+
+        account.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(getActivity(), AccountActivity.class);
+            startActivity(intent);
             return true;
         });
 

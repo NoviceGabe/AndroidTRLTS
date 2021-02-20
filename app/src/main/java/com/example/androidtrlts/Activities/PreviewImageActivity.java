@@ -1,6 +1,7 @@
 package com.example.androidtrlts.Activities;
 
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,7 +31,7 @@ public class PreviewImageActivity extends AppCompatActivity {
 
         SubsamplingScaleImageView imageView = (SubsamplingScaleImageView) findViewById(R.id.imageView);
         imageView.setVisibility(View.VISIBLE);
-
+        Uri uri = OCRHelper.imageUriResultCrop;
         if(OCRHelper.imageUriResultCrop != null){
             imageView.setImage(ImageSource.uri(OCRHelper.imageUriResultCrop));
         }else{

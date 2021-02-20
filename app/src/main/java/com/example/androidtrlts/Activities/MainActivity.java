@@ -243,6 +243,18 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        if(google.getUser() != null){
+            if(signIn != null && signOut != null){
+                signIn.setVisible(false);
+                signOut.setVisible(true);
+            }
+        }else{
+            if(signIn != null && signOut != null){
+                signIn.setVisible(true);
+                signOut.setVisible(false);
+            }
+        }
+
         SessionHelper sessionHelper = new SessionHelper(MainActivity.this);
         if(sessionHelper.has("toggle_theme") && sessionHelper.getSessionBoolean("toggle_theme")){
             sessionHelper.setSession("toggle_theme", false);

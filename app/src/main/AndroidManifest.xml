@@ -28,6 +28,7 @@
         <activity android:name=".Activities.MainSettingsActivity"></activity>
         <activity android:name=".Activities.EditorSettingsActivity"></activity>
         <activity android:name=".Activities.MainActivity"></activity>
+        <activity android:name=".Activities.AccountActivity"></activity>
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

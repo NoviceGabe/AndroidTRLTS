@@ -111,9 +111,10 @@ public class DB {
         }
 
         map.put("timestamp", FieldValue.serverTimestamp());
-
+        String uid = (String) map.get("id");
         db.collection("files")
-                .document((String) map.get("id")).set(map).addOnSuccessListener(aVoid -> {
+                .document(uid).set(map)
+                .addOnSuccessListener(aVoid -> {
             task.onSuccess(aVoid);
         }).addOnFailureListener(e -> {
             task.onError(e.getMessage());
